@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crystal Events — Budget Planner</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#C9A96E;--gold-l:#E8D5B0;--gold-d:#8B6914;--gold-pale:#FAF5EC;
+  --ch:#2C2825;--mid:#6B6560;--light:#9B9590;--bdr:#E0D8CC;
+  --cream:#FAF7F2;--warm:#F5F0E8;--white:#FFFFFF;
+  --sat:#3D7A52;--sat-l:#EAF4EE;--dec:#B84040;--dec-l:#FAF0F0;
+  --pend:#7A6A3D;--pend-l:#FAF5E4;
+  --sandbox:#5A6A8A;--sandbox-l:#EEF1F8;
+  --shadow:0 2px 12px rgba(44,40,37,.10);
+  --shadow-lg:0 6px 30px rgba(44,40,37,.15);
+}
+body{font-family:'Georgia',serif;background:var(--cream);color:var(--ch);min-height:100vh;font-size:14px}
+h1,h2,h3{font-family:'Georgia',serif}
+.sans{font-family:Arial,Helvetica,sans-serif}
+
+/* ── TOP BAR ── */
+.topbar{background:var(--ch);padding:0 20px;height:50px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100}
+.topbar-brand{font-size:16px;color:var(--gold-l);font-style:italic;letter-spacing:.05em}
+.topbar-sub{font-size:11px;color:var(--mid);font-family:Arial,sans-serif}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.btn{font-family:Arial,sans-serif;font-size:11px;padding:5px 13px;border-radius:3px;cursor:pointer;border:none;transition:all .15s;letter-spacing:.03em;white-space:nowrap}
+.btn-ghost{background:transparent;border:1px solid rgba(201,169,110,.4);color:var(--gold-l)}.btn-ghost:hover{background:rgba(201,169,110,.12)}
+.btn-gold{background:var(--gold);color:var(--ch);font-weight:bold}.btn-gold:hover{background:var(--gold-l)}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn-danger{background:transparent;border:1px solid rgba(184,64,64,.4);color:#C05050}.btn-danger:hover{background:var(--dec-l)}
+
+/* ── CURRENCY BAR ── */
+.currency-bar{background:var(--warm);border-bottom:1px solid var(--bdr);padding:8px 20px;display:flex;align-items:center;gap:16px;font-family:Arial,sans-serif;font-size:12px;color:var(--mid)}
+.fx-badge{background:white;border:1px solid var(--bdr);border-radius:4px;padding:3px 10px;font-size:11px;display:flex;align-items:center;gap:6px}
+.fx-rate{font-weight:bold;color:var(--ch)}
+.fx-time{font-size:10px;color:var(--light)}
+.sandbox-banner{background:var(--sandbox-l);border-bottom:2px solid var(--sandbox);padding:7px 20px;display:flex;align-items:center;gap:10px;font-family:Arial,sans-serif;font-size:12px;color:var(--sandbox);display:none}
+
+/* ── LAYOUT ── */
+.page{max-width:1100px;margin:0 auto;padding:20px}
+
+/* ── COUPLE HEADER ── */
+.couple-header{background:white;border:1px solid var(--bdr);border-radius:8px;padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:20px;box-shadow:var(--shadow)}
+.couple-names{flex:1}
+.couple-names input{font-family:'Georgia',serif;font-style:italic;font-size:22px;color:var(--ch);border:none;outline:none;width:100%;background:none;border-bottom:1px solid transparent}
+.couple-names input:focus{border-bottom-color:var(--gold)}
+.couple-names input::placeholder{color:var(--bdr)}
+.couple-meta{display:flex;gap:10px;margin-top:6px}
+.couple-meta input{font-family:Arial,sans-serif;font-size:12px;color:var(--mid);border:1px solid var(--bdr);border-radius:3px;padding:4px 8px;outline:none;background:var(--warm)}
+.couple-meta input:focus{border-color:var(--gold)}
+.totals-box{text-align:right;min-width:200px}
+.total-main{font-size:28px;font-style:italic;color:var(--ch)}
+.total-label{font-family:Arial,sans-serif;font-size:10px;color:var(--mid);letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px}
+.total-fx{font-family:Arial,sans-serif;font-size:11px;color:var(--light);margin-top:3px}
+.total-sub{font-family:Arial,sans-serif;font-size:12px;color:var(--mid);margin-top:4px}
+
+/* ── SUMMARY BAR ── */
+.summary-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.sum-card{background:white;border:1px solid var(--bdr);border-radius:6px;padding:12px 16px;box-shadow:var(--shadow)}
+.sum-card-label{font-family:Arial,sans-serif;font-size:10px;color:var(--mid);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.sum-card-value{font-size:20px;font-style:italic;color:var(--ch)}
+.sum-card-sub{font-family:Arial,sans-serif;font-size:11px;color:var(--light);margin-top:2px}
+
+/* ── EVENTS ── */
+.events-section{}
+.event-block{background:white;border:1px solid var(--bdr);border-radius:8px;margin-bottom:16px;box-shadow:var(--shadow);overflow:hidden}
+.event-header{background:var(--ch);padding:12px 18px;display:flex;align-items:center;gap:12px;cursor:pointer}
+.event-header-name{flex:1}
+.event-name-inp{font-family:'Georgia',serif;font-style:italic;font-size:15px;color:var(--gold-l);background:none;border:none;outline:none;width:100%;cursor:text}
+.event-name-inp:focus{border-bottom:1px solid var(--gold)}
+.event-date-inp{font-family:Arial,sans-serif;font-size:11px;color:var(--mid);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:3px;padding:3px 8px;outline:none;color:var(--light)}
+.event-total{font-size:16px;font-style:italic;color:var(--gold-l);white-space:nowrap}
+.event-body{padding:16px 18px}
+.event-toggle{font-size:18px;color:var(--gold);transition:transform .2s;user-select:none}
+.event-toggle.closed{transform:rotate(-90deg)}
+
+/* ── SERVICES ── */
+.service-block{border:1px solid var(--bdr);border-radius:6px;margin-bottom:12px;overflow:hidden}
+.service-header{background:var(--warm);padding:9px 14px;display:flex;align-items:center;gap:10px;cursor:pointer}
+.service-name-inp{font-family:'Georgia',serif;font-size:13px;color:var(--ch);background:none;border:none;outline:none;flex:1;cursor:text}
+.service-name-inp:focus{border-bottom:1px solid var(--gold)}
+.service-status{font-family:Arial,sans-serif;font-size:10px;padding:2px 8px;border-radius:10px;white-space:nowrap;font-weight:bold;letter-spacing:.04em}
+.status-pending{background:var(--pend-l);color:var(--pend)}
+.status-confirmed{background:var(--sat-l);color:var(--sat)}
+.status-declined{background:var(--dec-l);color:var(--dec)}
+.service-total{font-family:Arial,sans-serif;font-size:13px;color:var(--ch);white-space:nowrap;font-weight:bold}
+.service-body{padding:14px}
+.service-toggle{font-size:14px;color:var(--mid);transition:transform .2s}
+.service-toggle.closed{transform:rotate(-90deg)}
+
+/* ── PROVIDERS ── */
+.provider-block{border:1px solid var(--bdr);border-radius:5px;margin-bottom:10px;overflow:hidden}
+.provider-header{padding:9px 12px;display:flex;align-items:center;gap:8px;background:var(--cream);cursor:pointer}
+.provider-name-inp{font-family:Arial,sans-serif;font-size:13px;font-weight:bold;color:var(--ch);background:none;border:none;outline:none;flex:1}
+.provider-name-inp:focus{border-bottom:1px solid var(--gold)}
+.provider-version{font-family:Arial,sans-serif;font-size:10px;color:var(--light);white-space:nowrap}
+.provider-actions{display:flex;gap:5px;align-items:center}
+.provider-body{padding:12px 14px}
+.provider-notes-inp{font-family:Arial,sans-serif;font-size:12px;color:var(--mid);border:1px solid var(--bdr);border-radius:3px;padding:6px 9px;outline:none;width:100%;background:var(--warm);margin-bottom:10px;resize:vertical;min-height:40px}
+.provider-notes-inp:focus{border-color:var(--gold)}
+
+/* ── LINE ITEMS ── */
+.items-table{width:100%;border-collapse:collapse;margin-bottom:10px;font-family:Arial,sans-serif;font-size:12px}
+.items-table th{text-align:left;padding:5px 8px;border-bottom:1px solid var(--bdr);font-size:10px;font-weight:bold;color:var(--mid);text-transform:uppercase;letter-spacing:.06em}
+.items-table td{padding:5px 8px;border-bottom:1px solid var(--warm)}
+.items-table tr:last-child td{border-bottom:none}
+.items-table input{font-family:Arial,sans-serif;font-size:12px;border:1px solid transparent;border-radius:3px;padding:3px 6px;outline:none;background:transparent;width:100%}
+.items-table input:focus{background:white;border-color:var(--gold)}
+.inp-num{text-align:right;width:80px}
+.inp-desc{width:100%}
+.vat-shown{font-size:10px;padding:2px 6px;border-radius:9px;cursor:pointer;border:1px solid var(--bdr);background:var(--warm);white-space:nowrap;font-family:Arial,sans-serif}
+.vat-shown.yes{background:#EAF4EE;border-color:#3D7A52;color:#3D7A52}
+.vat-shown.no{background:#FAF5E4;border-color:#7A6A3D;color:#7A6A3D}
+.item-rm{color:var(--bdr);cursor:pointer;font-size:16px;line-height:1}.item-rm:hover{color:#C05050}
+.item-total{font-weight:bold;color:var(--ch);text-align:right;white-space:nowrap}
+.vat-calc{font-size:10px;color:var(--light)}
+
+/* ── PAYMENT SCHEME ── */
+.payment-scheme{background:var(--warm);border-radius:4px;padding:10px 12px;margin-top:8px}
+.payment-scheme-title{font-family:Arial,sans-serif;font-size:10px;font-weight:bold;color:var(--mid);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px}
+.payment-row{display:flex;gap:8px;align-items:center;margin-bottom:5px;font-family:Arial,sans-serif;font-size:12px}
+.payment-row input{font-family:Arial,sans-serif;font-size:12px;border:1px solid var(--bdr);border-radius:3px;padding:3px 7px;outline:none;background:white}
+.payment-row input:focus{border-color:var(--gold)}
+.payment-row .p-rm{color:var(--bdr);cursor:pointer;font-size:14px}.payment-row .p-rm:hover{color:#C05050}
+
+/* ── VERSION HISTORY ── */
+.versions-panel{background:var(--warm);border-radius:4px;padding:10px 12px;margin-top:8px}
+.versions-title{font-family:Arial,sans-serif;font-size:10px;font-weight:bold;color:var(--mid);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px}
+.version-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--bdr);font-family:Arial,sans-serif;font-size:12px}
+.version-row:last-child{border-bottom:none}
+.version-date{color:var(--light);font-size:11px;white-space:nowrap}
+.version-note{flex:1;color:var(--mid)}
+.version-total{font-weight:bold;color:var(--ch);white-space:nowrap}
+.version-restore{font-size:11px;color:var(--gold-d);cursor:pointer;text-decoration:underline}
+
+/* ── CONFIRM/DECLINE ── */
+.confirm-bar{display:flex;gap:8px;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--bdr)}
+.confirm-note{font-family:Arial,sans-serif;font-size:11px;color:var(--mid);flex:1;font-style:italic}
+
+/* ── CE FEE ── */
+.ce-fee-block{background:var(--ch);border-radius:8px;padding:16px 20px;margin-top:16px;display:flex;align-items:center;gap:16px;color:var(--gold-l)}
+.ce-fee-label{font-size:12px;font-family:Arial,sans-serif;letter-spacing:.05em}
+.ce-fee-inp{font-family:'Georgia',serif;font-style:italic;font-size:20px;color:var(--gold-l);background:none;border:none;border-bottom:1px solid rgba(201,169,110,.3);outline:none;width:130px;text-align:right}
+.ce-fee-inp:focus{border-bottom-color:var(--gold)}
+.ce-fee-note{font-family:Arial,sans-serif;font-size:11px;color:var(--mid)}
+
+/* ── ADD BUTTONS ── */
+.add-row{display:flex;gap:8px;margin-top:8px}
+.btn-add{font-family:Arial,sans-serif;font-size:11px;padding:5px 12px;border-radius:3px;cursor:pointer;border:1px dashed var(--bdr);background:transparent;color:var(--mid);transition:all .15s}
+.btn-add:hover{border-color:var(--gold);color:var(--gold-d);background:var(--gold-pale)}
+
+/* ── SANDBOX ── */
+.sandbox-mode .event-block{border-color:var(--sandbox);border-width:2px}
+.sandbox-mode .provider-block{border-color:var(--sandbox)}
+
+/* ── MODAL ── */
+.modal-ov{position:fixed;inset:0;background:rgba(44,40,37,.6);z-index:999;display:flex;align-items:center;justify-content:center}
+.modal{background:white;border-radius:8px;padding:26px;max-width:440px;width:92%;box-shadow:var(--shadow-lg);max-height:90vh;overflow-y:auto}
+.modal h2{font-size:20px;font-style:italic;margin-bottom:10px}
+.modal p{font-family:Arial,sans-serif;font-size:12px;color:var(--mid);line-height:1.7;margin-bottom:8px}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.pn{font-family:Arial,sans-serif;font-size:11px;background:var(--warm);border-radius:4px;padding:10px 12px;line-height:1.6;border-left:2px solid var(--gold);margin-bottom:10px}
+code{font-size:10px;background:var(--warm);padding:1px 4px;border-radius:2px;font-family:monospace}
+
+@media print{
+  .topbar,.currency-bar,.sandbox-banner,.add-row,.btn,.item-rm,.p-rm,.provider-actions{display:none!important}
+  .event-block,.service-block,.provider-block{break-inside:avoid}
+  body{background:white}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <span class="topbar-brand">Crystal Events</span>
+  <span class="topbar-sub">· Budget Planner</span>
+  <div class="topbar-right">
+    <span id="sandboxToggleWrap">
+      <button class="btn btn-ghost btn-sm" id="sandboxBtn" onclick="toggleSandbox()">⧖ Sandbox mode</button>
+    </span>
+    <button class="btn btn-ghost btn-sm" onclick="showModal('privModal')">⚑ Privacy</button>
+    <button class="btn btn-ghost btn-sm" onclick="doExport()">↓ Save</button>
+    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('impF').click()">↑ Load</button>
+    <input type="file" id="impF" accept=".json" style="display:none" onchange="doImport(event)">
+    <button class="btn btn-gold btn-sm" onclick="window.print()">⎙ Print / PDF</button>
+  </div>
+</div>
+
+<!-- SANDBOX BANNER -->
+<div class="sandbox-banner" id="sandboxBanner">
+  <strong>⧖ Sandbox mode — What if?</strong>
+  <span style="font-weight:normal">Changes here do not affect the real budget. Explore freely.</span>
+  <button class="btn btn-sm" style="margin-left:auto;background:var(--sandbox);color:white;border:none" onclick="toggleSandbox()">Exit sandbox</button>
+</div>
+
+<!-- CURRENCY BAR -->
+<div class="currency-bar">
+  <span>Working currency: <strong>EUR €</strong></span>
+  <div class="fx-badge">
+    USD/EUR: <span class="fx-rate" id="fxUSD">—</span>
+    <span class="fx-time" id="fxTime"></span>
+  </div>
+  <div class="fx-badge">
+    GBP/EUR: <span class="fx-rate" id="fxGBP">—</span>
+  </div>
+  <button class="btn btn-ghost btn-sm" onclick="fetchRates()">↻ Refresh rates</button>
+  <span class="fx-time" id="fxStatus">Loading…</span>
+</div>
+
+<!-- MAIN PAGE -->
+<div class="page" id="mainPage">
+
+  <!-- COUPLE HEADER -->
+  <div class="couple-header">
+    <div class="couple-names">
+      <input id="coupleName" placeholder="Couple names & year…" oninput="sv()">
+      <div class="couple-meta">
+        <input id="coupleDate" placeholder="Wedding date" style="width:140px" oninput="sv()">
+        <input id="coupleEmail" placeholder="Contact email" style="width:200px" oninput="sv()">
+        <input id="coupleNotes" placeholder="Notes…" style="flex:1" oninput="sv()">
+      </div>
+    </div>
+    <div class="totals-box">
+      <div class="total-label sans">Total project budget</div>
+      <div class="total-main" id="grandTotal">€0</div>
+      <div class="total-fx" id="grandTotalFx"></div>
+      <div class="total-sub" id="grandTotalSub"></div>
+    </div>
+  </div>
+
+  <!-- SUMMARY BAR -->
+  <div class="summary-bar">
+    <div class="sum-card">
+      <div class="sum-card-label">Confirmed</div>
+      <div class="sum-card-value" id="sumConfirmed">€0</div>
+      <div class="sum-card-sub" id="sumConfirmedCount">0 services</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-card-label">Pending decision</div>
+      <div class="sum-card-value" id="sumPending">€0</div>
+      <div class="sum-card-sub" id="sumPendingCount">0 services</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-card-label">VAT total</div>
+      <div class="sum-card-value" id="sumVat">€0</div>
+      <div class="sum-card-sub">included in totals</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-card-label">Crystal Events fee</div>
+      <div class="sum-card-value" id="sumFee">€0</div>
+      <div class="sum-card-sub">planning service</div>
+    </div>
+  </div>
+
+  <!-- EVENTS -->
+  <div id="eventsContainer"></div>
+
+  <!-- ADD EVENT -->
+  <div class="add-row">
+    <button class="btn-add" onclick="addEvent()">+ Add event (ceremony, dinner, welcome party…)</button>
+  </div>
+
+  <!-- CE FEE -->
+  <div class="ce-fee-block">
+    <div style="flex:1">
+      <div class="ce-fee-label">Crystal Events — Planning Fee</div>
+      <div class="ce-fee-note" style="margin-top:3px">Included in total budget</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <span style="font-size:13px">€</span>
+      <input class="ce-fee-inp" id="ceFeeInp" type="number" placeholder="0" min="0" oninput="sv();render()">
+    </div>
+  </div>
+
+</div><!-- end .page -->
+
+<!-- PRIVACY MODAL -->
+<div class="modal-ov" id="privModal" style="display:none" onclick="if(event.target===this)hideModal('privModal')">
+<div class="modal">
+  <h2>Privacy &amp; Data</h2>
+  <div class="pn"><strong>No data leaves this browser.</strong> All budget data is stored locally on this device only.</div>
+  <p><strong>Per-couple files:</strong> Use <em>Save</em> to download <code>[couple-name].json</code>. One file per couple. Load it whenever you have new information. Archive in <code>01-couples/[name]/budget.json</code>.</p>
+  <p><strong>Share with couple:</strong> Email the .json file. They open it in the same tool. In sandbox mode they can explore without changing the real numbers.</p>
+  <p><strong>Sandbox mode:</strong> A copy of the real budget the couple (or you) can edit freely — changes are flagged and don't affect the confirmed budget unless you explicitly apply them.</p>
+  <p><strong>Print / PDF:</strong> Clean printable view — controls and buttons are hidden.</p>
+  <div class="modal-btns"><button class="btn btn-gold" onclick="hideModal('privModal')">Got it</button></div>
+</div>
+</div>
+
+<!-- VERSION RESTORE MODAL -->
+<div class="modal-ov" id="restoreModal" style="display:none" onclick="if(event.target===this)hideModal('restoreModal')">
+<div class="modal">
+  <h2>Restore version</h2>
+  <p>This will replace the current provider items with the saved version. The current state will be saved as a new version first.</p>
+  <div class="modal-btns">
+    <button class="btn btn-ghost" onclick="hideModal('restoreModal')">Cancel</button>
+    <button class="btn btn-gold" id="restoreConfirmBtn">Restore</button>
+  </div>
+</div>
+</div>
+
+<script>
+// ─── STATE ────────────────────────────────────────────────────
+let S = {
+  coupleName: '', coupleDate: '', coupleEmail: '', coupleNotes: '',
+  ceFee: 0,
+  events: [],
+  sandbox: false
+};
+let eId=1, sId=1, pId=1, iId=1, pmId=1;
+let fxUSD=null, fxGBP=null;
+let sandboxCopy=null;
+let pendingRestore=null;
+
+// ─── FX RATES ─────────────────────────────────────────────────
+async function fetchRates() {
+  document.getElementById('fxStatus').textContent = 'Fetching…';
+  try {
+    const r = await fetch('https://api.frankfurter.app/latest?base=EUR&symbols=USD,GBP');
+    if (!r.ok) throw new Error();
+    const d = await r.json();
+    fxUSD = d.rates.USD;
+    fxGBP = d.rates.GBP;
+    const now = new Date();
+    document.getElementById('fxUSD').textContent = fxUSD ? fxUSD.toFixed(4) : '—';
+    document.getElementById('fxGBP').textContent = fxGBP ? fxGBP.toFixed(4) : '—';
+    document.getElementById('fxTime').textContent = now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    document.getElementById('fxStatus').textContent = 'Updated ' + now.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+    render();
+  } catch(e) {
+    document.getElementById('fxStatus').textContent = 'Rate fetch failed — check connection';
+  }
+}
+fetchRates();
+
+// ─── CALCULATIONS ─────────────────────────────────────────────
+const STD_VAT = 21; // Spain standard VAT
+
+function calcItemTotal(item) {
+  // item: {price, vatPct, vatShown}
+  // If vatShown=true: price already includes VAT. ex-VAT = price/(1+vat/100)
+  // If vatShown=false: price is ex-VAT. total = price*(1+vat/100)
+  const price = parseFloat(item.price) || 0;
+  const vat = parseFloat(item.vatPct) || 0;
+  if (item.vatShown) {
+    const exVat = price / (1 + vat/100);
+    return { exVat, vatAmt: price - exVat, total: price };
+  } else {
+    const vatAmt = price * vat/100;
+    return { exVat: price, vatAmt, total: price + vatAmt };
+  }
+}
+
+function providerTotal(provider) {
+  // Use the active/latest version's items
+  const items = provider.items || [];
+  return items.reduce((sum, item) => sum + calcItemTotal(item).total, 0);
+}
+
+function serviceSelectedTotal(service) {
+  // If confirmed, use confirmed provider. Else use sum of all options? No — use lowest/first.
+  const confirmed = service.providers.find(p => p.status === 'confirmed');
+  if (confirmed) return providerTotal(confirmed);
+  // If no confirmed, use first provider as estimate
+  if (service.providers.length > 0) return providerTotal(service.providers[0]);
+  return 0;
+}
+
+function eventTotal(event) {
+  return event.services.reduce((sum, s) => sum + serviceSelectedTotal(s), 0);
+}
+
+function grandTotal() {
+  const eventsSum = S.events.reduce((sum, e) => sum + eventTotal(e), 0);
+  const fee = parseFloat(S.ceFee) || 0;
+  return eventsSum + fee;
+}
+
+function totalVAT() {
+  let vat = 0;
+  S.events.forEach(e => e.services.forEach(s => {
+    const src = s.providers.find(p=>p.status==='confirmed') || s.providers[0];
+    if (src) src.items.forEach(item => { vat += calcItemTotal(item).vatAmt; });
+  }));
+  return vat;
+}
+
+function fmtEur(n) { return '€' + n.toLocaleString('en-GB',{minimumFractionDigits:0,maximumFractionDigits:0}); }
+function fmtFx(eur, rate, sym) {
+  if (!rate) return '';
+  return sym + (eur * rate).toLocaleString('en-GB',{minimumFractionDigits:0,maximumFractionDigits:0});
+}
+
+// ─── DATA CREATORS ────────────────────────────────────────────
+function newEvent(name='') {
+  return { id:eId++, name:name||'New Event', date:'', open:true, services:[] };
+}
+function newService(name='') {
+  return { id:sId++, name:name||'New Service', open:true, providers:[] };
+}
+function newProvider(name='') {
+  return {
+    id:pId++, name:name||'New Provider', open:true, notes:'',
+    status:'pending', // pending|confirmed|declined
+    items:[ newItem() ],
+    payments:[],
+    versions:[]
+  };
+}
+function newItem() {
+  return { id:iId++, description:'', price:0, vatPct:STD_VAT, vatShown:false };
+}
+function newPayment() {
+  return { id:pmId++, label:'Deposit', pct:0, date:'', note:'' };
+}
+
+// ─── ADD/REMOVE ────────────────────────────────────────────────
+function addEvent() {
+  S.events.push(newEvent());
+  render(); sv();
+}
+function removeEvent(eid) {
+  S.events = S.events.filter(e=>e.id!==eid);
+  render(); sv();
+}
+function addService(eid) {
+  const e = S.events.find(x=>x.id===eid);
+  if (e) e.services.push(newService());
+  render(); sv();
+}
+function removeService(eid, sid) {
+  const e = S.events.find(x=>x.id===eid);
+  if (e) e.services = e.services.filter(s=>s.id!==sid);
+  render(); sv();
+}
+function addProvider(eid, sid) {
+  const e = S.events.find(x=>x.id===eid);
+  const s = e?.services.find(x=>x.id===sid);
+  if (s) s.providers.push(newProvider());
+  render(); sv();
+}
+function removeProvider(eid, sid, pid) {
+  const e = S.events.find(x=>x.id===eid);
+  const s = e?.services.find(x=>x.id===sid);
+  if (s) s.providers = s.providers.filter(p=>p.id!==pid);
+  render(); sv();
+}
+function addItem(eid, sid, pid) {
+  const p = getProvider(eid, sid, pid);
+  if (p) p.items.push(newItem());
+  render(); sv();
+}
+function removeItem(eid, sid, pid, iid) {
+  const p = getProvider(eid, sid, pid);
+  if (p) p.items = p.items.filter(i=>i.id!==iid);
+  render(); sv();
+}
+function addPayment(eid, sid, pid) {
+  const p = getProvider(eid, sid, pid);
+  if (p) p.payments.push(newPayment());
+  render(); sv();
+}
+function removePayment(eid, sid, pid, pmid) {
+  const p = getProvider(eid, sid, pid);
+  if (p) p.payments = p.payments.filter(pm=>pm.id!==pmid);
+  render(); sv();
+}
+function getProvider(eid, sid, pid) {
+  return S.events.find(e=>e.id===eid)?.services.find(s=>s.id===sid)?.providers.find(p=>p.id===pid);
+}
+
+// ─── PROVIDER VERSIONS ────────────────────────────────────────
+function saveVersion(eid, sid, pid, note) {
+  const p = getProvider(eid, sid, pid);
+  if (!p) return;
+  p.versions.push({
+    date: new Date().toISOString(),
+    note: note || 'Version saved',
+    total: providerTotal(p),
+    items: JSON.parse(JSON.stringify(p.items)),
+    payments: JSON.parse(JSON.stringify(p.payments))
+  });
+  sv();
+  render();
+}
+function restoreVersion(eid, sid, pid, vIdx) {
+  pendingRestore = { eid, sid, pid, vIdx };
+  document.getElementById('restoreConfirmBtn').onclick = () => {
+    const p = getProvider(eid, sid, pid);
+    if (p) {
+      // Save current as new version first
+      p.versions.push({
+        date: new Date().toISOString(),
+        note: 'Auto-saved before restore',
+        total: providerTotal(p),
+        items: JSON.parse(JSON.stringify(p.items)),
+        payments: JSON.parse(JSON.stringify(p.payments))
+      });
+      const v = p.versions[vIdx];
+      p.items = JSON.parse(JSON.stringify(v.items));
+      p.payments = JSON.parse(JSON.stringify(v.payments));
+    }
+    hideModal('restoreModal');
+    render(); sv();
+  };
+  showModal('restoreModal');
+}
+
+// ─── STATUS ───────────────────────────────────────────────────
+function setProviderStatus(eid, sid, pid, status) {
+  const s = S.events.find(e=>e.id===eid)?.services.find(s=>s.id===sid);
+  if (!s) return;
+  // Decline others if confirming
+  if (status === 'confirmed') {
+    s.providers.forEach(p => { if (p.id !== pid) p.status = 'declined'; });
+  }
+  const p = s.providers.find(p=>p.id===pid);
+  if (p) p.status = status === p.status ? 'pending' : status;
+  // Update service status
+  if (s.providers.some(p=>p.status==='confirmed')) s.confirmedProviderId = pid;
+  render(); sv();
+}
+
+// ─── SANDBOX ──────────────────────────────────────────────────
+function toggleSandbox() {
+  S.sandbox = !S.sandbox;
+  if (S.sandbox) {
+    sandboxCopy = JSON.parse(JSON.stringify(S));
+  } else {
+    if (sandboxCopy) {
+      // Restore real data
+      const realData = sandboxCopy;
+      realData.sandbox = false;
+      S = realData;
+      sandboxCopy = null;
+      document.getElementById('coupleName').value = S.coupleName;
+      document.getElementById('coupleDate').value = S.coupleDate;
+      document.getElementById('coupleEmail').value = S.coupleEmail;
+      document.getElementById('coupleNotes').value = S.coupleNotes;
+      document.getElementById('ceFeeInp').value = S.ceFee || '';
+    }
+  }
+  document.getElementById('sandboxBanner').style.display = S.sandbox ? 'flex' : 'none';
+  document.getElementById('sandboxBtn').textContent = S.sandbox ? '✓ In sandbox' : '⧖ Sandbox mode';
+  document.getElementById('mainPage').className = S.sandbox ? 'page sandbox-mode' : 'page';
+  render();
+}
+
+// ─── RENDER ───────────────────────────────────────────────────
+function render() {
+  // Update grand total
+  const gt = grandTotal();
+  document.getElementById('grandTotal').textContent = fmtEur(gt);
+  document.getElementById('grandTotalFx').textContent =
+    [fxUSD ? fmtFx(gt, fxUSD, '$') : '', fxGBP ? fmtFx(gt, fxGBP, '£') : ''].filter(Boolean).join('  ·  ');
+
+  // Summary bar
+  let confirmed=0, cCount=0, pending=0, pCount=0;
+  S.events.forEach(e => e.services.forEach(s => {
+    const cp = s.providers.find(p=>p.status==='confirmed');
+    if (cp) { confirmed += providerTotal(cp); cCount++; }
+    else { const fp = s.providers[0]; if(fp){ pending += providerTotal(fp); pCount++; } }
+  }));
+  document.getElementById('sumConfirmed').textContent = fmtEur(confirmed);
+  document.getElementById('sumConfirmedCount').textContent = cCount + ' service' + (cCount!==1?'s':'');
+  document.getElementById('sumPending').textContent = fmtEur(pending);
+  document.getElementById('sumPendingCount').textContent = pCount + ' service' + (pCount!==1?'s':'');
+  document.getElementById('sumVat').textContent = fmtEur(totalVAT());
+  document.getElementById('sumFee').textContent = fmtEur(parseFloat(S.ceFee)||0);
+
+  // Events
+  const container = document.getElementById('eventsContainer');
+  container.innerHTML = '';
+  S.events.forEach(event => container.appendChild(renderEvent(event)));
+}
+
+function renderEvent(event) {
+  const et = eventTotal(event);
+  const div = document.createElement('div');
+  div.className = 'event-block';
+  div.innerHTML = `
+    <div class="event-header" onclick="toggleEvent(${event.id})">
+      <div class="event-header-name">
+        <input class="event-name-inp" value="${esc(event.name)}"
+          oninput="updateField('event',${event.id},'name',this.value)"
+          onclick="event.stopPropagation()">
+      </div>
+      <input class="event-date-inp" value="${esc(event.date)}" placeholder="Date…"
+        oninput="updateField('event',${event.id},'date',this.value)"
+        onclick="event.stopPropagation()" style="margin-right:12px">
+      <div class="event-total">${fmtEur(et)}</div>
+      <div class="event-toggle ${event.open?'':'closed'}" style="margin-left:10px">▾</div>
+      <button class="btn btn-ghost btn-sm" style="margin-left:8px;font-size:10px"
+        onclick="event.stopPropagation();removeEvent(${event.id})">Remove</button>
+    </div>`;
+
+  if (event.open) {
+    const body = document.createElement('div');
+    body.className = 'event-body';
+    event.services.forEach(s => body.appendChild(renderService(event.id, s)));
+    const addRow = document.createElement('div');
+    addRow.className = 'add-row';
+    addRow.innerHTML = `<button class="btn-add" onclick="addService(${event.id})">+ Add service (catering, photography, music…)</button>`;
+    body.appendChild(addRow);
+    div.appendChild(body);
+  }
+  return div;
+}
+
+function renderService(eid, service) {
+  const st = serviceSelectedTotal(service);
+  const confirmed = service.providers.find(p=>p.status==='confirmed');
+  const statusLabel = confirmed ? 'confirmed' : (service.providers.some(p=>p.status==='declined')&&!confirmed ? 'pending' : 'pending');
+  const div = document.createElement('div');
+  div.className = 'service-block';
+  div.innerHTML = `
+    <div class="service-header" onclick="toggleService(${service.id})">
+      <div class="service-toggle ${service.open?'':'closed'}">▾</div>
+      <input class="service-name-inp" value="${esc(service.name)}"
+        oninput="updateField('service',${service.id},'name',this.value)"
+        onclick="event.stopPropagation()">
+      <span class="service-status status-${statusLabel} sans">${statusLabel.toUpperCase()}</span>
+      <div class="service-total">${fmtEur(st)}</div>
+      <button class="btn btn-ghost btn-sm" style="margin-left:8px;font-size:10px"
+        onclick="event.stopPropagation();removeService(${eid},${service.id})">✕</button>
+    </div>`;
+  if (service.open) {
+    const body = document.createElement('div');
+    body.className = 'service-body';
+    service.providers.forEach(p => body.appendChild(renderProvider(eid, service.id, p)));
+    const addRow = document.createElement('div');
+    addRow.className = 'add-row';
+    addRow.innerHTML = `<button class="btn-add" onclick="addProvider(${eid},${service.id})">+ Add provider / option</button>`;
+    body.appendChild(addRow);
+    div.appendChild(body);
+  }
+  return div;
+}
+
+function renderProvider(eid, sid, provider) {
+  const pt = providerTotal(provider);
+  const statusColors = { confirmed:'var(--sat)', declined:'var(--dec)', pending:'var(--pend)' };
+  const div = document.createElement('div');
+  div.className = 'provider-block';
+  div.style.borderLeft = `3px solid ${statusColors[provider.status]||'var(--bdr)'}`;
+
+  // Header
+  const hdr = document.createElement('div');
+  hdr.className = 'provider-header';
+  hdr.innerHTML = `
+    <div onclick="toggleProvider(${provider.id})" style="margin-right:6px;cursor:pointer;color:var(--mid);font-size:13px">${provider.open?'▾':'▸'}</div>
+    <input class="provider-name-inp" value="${esc(provider.name)}"
+      oninput="updateField('provider',${provider.id},'name',this.value)">
+    <span class="provider-version sans">${provider.versions.length ? provider.versions.length + ' ver.' : 'v1'}</span>
+    <div class="provider-actions">
+      <button class="btn btn-sm ${provider.status==='confirmed'?'btn-gold':'btn-ghost'}" 
+        onclick="setProviderStatus(${eid},${sid},${provider.id},'confirmed')" 
+        title="Confirm this provider">✓ Confirm</button>
+      <button class="btn btn-sm ${provider.status==='declined'?'btn-danger':'btn-ghost'}"
+        onclick="setProviderStatus(${eid},${sid},${provider.id},'declined')"
+        title="Decline this provider">✕ Decline</button>
+      <span style="font-family:Arial,sans-serif;font-size:13px;font-weight:bold;margin-left:6px;white-space:nowrap">${fmtEur(pt)}</span>
+      <button class="btn btn-ghost btn-sm" style="margin-left:4px"
+        onclick="removeProvider(${eid},${sid},${provider.id})">✕</button>
+    </div>`;
+  div.appendChild(hdr);
+
+  if (provider.open) {
+    const body = document.createElement('div');
+    body.className = 'provider-body';
+
+    // Notes
+    const notesRow = document.createElement('div');
+    notesRow.innerHTML = `<textarea class="provider-notes-inp" placeholder="Notes, contact, website…"
+      oninput="updateField('provider',${provider.id},'notes',this.value)">${esc(provider.notes)}</textarea>`;
+    body.appendChild(notesRow);
+
+    // Items table
+    const tbl = document.createElement('table');
+    tbl.className = 'items-table sans';
+    tbl.innerHTML = `<thead><tr>
+      <th style="width:35%">Description</th>
+      <th style="width:12%;text-align:right">Price</th>
+      <th style="width:10%;text-align:center">VAT %</th>
+      <th style="width:12%;text-align:center">VAT shown?</th>
+      <th style="width:14%;text-align:right">Ex-VAT</th>
+      <th style="width:12%;text-align:right">Total inc.</th>
+      <th style="width:5%"></th>
+    </tr></thead>`;
+    const tbody = document.createElement('tbody');
+    provider.items.forEach(item => {
+      const calc = calcItemTotal(item);
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input class="inp-desc" value="${esc(item.description)}" placeholder="Service or item…"
+          oninput="updateItem(${eid},${sid},${provider.id},${item.id},'description',this.value)"></td>
+        <td><input class="inp-num inp" value="${item.price||''}" type="number" placeholder="0"
+          oninput="updateItem(${eid},${sid},${provider.id},${item.id},'price',this.value);rerender()"></td>
+        <td><input class="inp-num inp" value="${item.vatPct}" type="number" min="0" max="100" placeholder="${STD_VAT}"
+          oninput="updateItem(${eid},${sid},${provider.id},${item.id},'vatPct',this.value);rerender()"></td>
+        <td style="text-align:center">
+          <span class="vat-shown ${item.vatShown?'yes':'no'}"
+            onclick="toggleVatShown(${eid},${sid},${provider.id},${item.id})">
+            ${item.vatShown?'Incl.':'Ex-VAT'}
+          </span>
+        </td>
+        <td class="item-total" style="color:var(--mid)">${fmtEur(calc.exVat)}<br><span class="vat-calc">+${fmtEur(calc.vatAmt)} VAT</span></td>
+        <td class="item-total">${fmtEur(calc.total)}</td>
+        <td><span class="item-rm" onclick="removeItem(${eid},${sid},${provider.id},${item.id})">×</span></td>`;
+      tbody.appendChild(tr);
+    });
+    tbl.appendChild(tbody);
+    body.appendChild(tbl);
+
+    // Total row
+    const totRow = document.createElement('div');
+    totRow.style.cssText = 'display:flex;justify-content:flex-end;gap:16px;font-family:Arial,sans-serif;font-size:12px;color:var(--mid);margin-bottom:8px;padding-right:26px';
+    const exVatSum = provider.items.reduce((s,i)=>s+calcItemTotal(i).exVat,0);
+    const vatSum = provider.items.reduce((s,i)=>s+calcItemTotal(i).vatAmt,0);
+    totRow.innerHTML = `<span>Ex-VAT: <strong>${fmtEur(exVatSum)}</strong></span><span>VAT: <strong>${fmtEur(vatSum)}</strong></span><span style="color:var(--ch)">Total: <strong>${fmtEur(pt)}</strong> ${fxUSD?'<span style="color:var(--light);font-size:11px">≈ '+fmtFx(pt,fxUSD,'$')+'  '+fmtFx(pt,fxGBP,'£')+'</span>':''}</span>`;
+    body.appendChild(totRow);
+
+    // Add item
+    const addItemRow = document.createElement('div');
+    addItemRow.className = 'add-row';
+    addItemRow.innerHTML = `<button class="btn-add" onclick="addItem(${eid},${sid},${provider.id})">+ Add line item</button>`;
+    body.appendChild(addItemRow);
+
+    // Payment scheme
+    const ps = document.createElement('div');
+    ps.className = 'payment-scheme';
+    ps.innerHTML = `<div class="payment-scheme-title">Payment schedule</div>`;
+    provider.payments.forEach(pm => {
+      const row = document.createElement('div');
+      row.className = 'payment-row';
+      row.innerHTML = `
+        <input value="${esc(pm.label)}" placeholder="Label (Deposit, Final…)" style="width:130px"
+          oninput="updatePayment(${eid},${sid},${provider.id},${pm.id},'label',this.value)">
+        <input value="${pm.pct||''}" type="number" placeholder="%" min="0" max="100" style="width:55px"
+          oninput="updatePayment(${eid},${sid},${provider.id},${pm.id},'pct',this.value);rerender()">
+        <span style="font-size:11px;color:var(--mid)">${pm.pct?fmtEur(pt*pm.pct/100):''}</span>
+        <input value="${esc(pm.date)}" placeholder="Due date" style="width:110px"
+          oninput="updatePayment(${eid},${sid},${provider.id},${pm.id},'date',this.value)">
+        <input value="${esc(pm.note)}" placeholder="Note (incl. VAT discount…)" style="flex:1"
+          oninput="updatePayment(${eid},${sid},${provider.id},${pm.id},'note',this.value)">
+        <span class="p-rm" onclick="removePayment(${eid},${sid},${provider.id},${pm.id})">×</span>`;
+      ps.appendChild(row);
+    });
+    const addPmRow = document.createElement('button');
+    addPmRow.className = 'btn-add';addPmRow.style.marginTop='5px';
+    addPmRow.textContent = '+ Add payment';
+    addPmRow.onclick = () => addPayment(eid, sid, provider.id);
+    ps.appendChild(addPmRow);
+    body.appendChild(ps);
+
+    // Version history
+    if (provider.versions.length > 0) {
+      const vp = document.createElement('div');
+      vp.className = 'versions-panel';
+      vp.innerHTML = `<div class="versions-title">Proposal history (${provider.versions.length} version${provider.versions.length!==1?'s':''})</div>`;
+      provider.versions.forEach((v, idx) => {
+        const vrow = document.createElement('div');
+        vrow.className = 'version-row';
+        const d = new Date(v.date);
+        vrow.innerHTML = `
+          <span class="version-date">${d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</span>
+          <span class="version-note">${esc(v.note)}</span>
+          <span class="version-total">${fmtEur(v.total)}</span>
+          <span class="version-restore" onclick="restoreVersion(${eid},${sid},${provider.id},${idx})">Restore</span>`;
+        vp.appendChild(vrow);
+      });
+      body.appendChild(vp);
+    }
+
+    // Save version button
+    const saveVRow = document.createElement('div');
+    saveVRow.className = 'add-row';
+    saveVRow.style.marginTop = '6px';
+    saveVRow.innerHTML = `<button class="btn-add" onclick="promptSaveVersion(${eid},${sid},${provider.id})">⊕ Save current as version snapshot</button>`;
+    body.appendChild(saveVRow);
+
+    div.appendChild(body);
+  }
+  return div;
+}
+
+function promptSaveVersion(eid, sid, pid) {
+  const note = prompt('Version note (e.g. "After call 14 Jan", "Revised menu"):');
+  if (note !== null) saveVersion(eid, sid, pid, note || 'Snapshot');
+}
+
+// ─── TOGGLE ───────────────────────────────────────────────────
+function toggleEvent(id) {
+  const e = S.events.find(x=>x.id===id);
+  if (e) e.open = !e.open;
+  render(); sv();
+}
+function toggleService(id) {
+  S.events.forEach(e => e.services.forEach(s => { if(s.id===id) s.open=!s.open; }));
+  render(); sv();
+}
+function toggleProvider(id) {
+  S.events.forEach(e => e.services.forEach(s => s.providers.forEach(p => { if(p.id===id) p.open=!p.open; })));
+  render(); sv();
+}
+
+// ─── FIELD UPDATES ────────────────────────────────────────────
+function updateField(type, id, field, value) {
+  if (type==='event') { const e=S.events.find(x=>x.id===id); if(e) e[field]=value; }
+  if (type==='service') { S.events.forEach(e=>e.services.forEach(s=>{if(s.id===id)s[field]=value;})); }
+  if (type==='provider') { S.events.forEach(e=>e.services.forEach(s=>s.providers.forEach(p=>{if(p.id===id)p[field]=value;}))); }
+  sv();
+}
+function updateItem(eid, sid, pid, iid, field, value) {
+  const p = getProvider(eid, sid, pid);
+  if (p) { const item=p.items.find(i=>i.id===iid); if(item) item[field]=field==='price'||field==='vatPct'?parseFloat(value)||0:value; }
+  sv();
+}
+function toggleVatShown(eid, sid, pid, iid) {
+  const p = getProvider(eid, sid, pid);
+  if (p) { const item=p.items.find(i=>i.id===iid); if(item) item.vatShown=!item.vatShown; }
+  render(); sv();
+}
+function updatePayment(eid, sid, pid, pmid, field, value) {
+  const p = getProvider(eid, sid, pid);
+  if (p) { const pm=p.payments.find(x=>x.id===pmid); if(pm) pm[field]=field==='pct'?parseFloat(value)||0:value; }
+  sv();
+}
+
+// ─── PARTIAL RERENDER (number changes) ────────────────────────
+function rerender() { sv(); render(); }
+
+// ─── SAVE / LOAD ──────────────────────────────────────────────
+function sv() {
+  S.coupleName  = document.getElementById('coupleName').value;
+  S.coupleDate  = document.getElementById('coupleDate').value;
+  S.coupleEmail = document.getElementById('coupleEmail').value;
+  S.coupleNotes = document.getElementById('coupleNotes').value;
+  S.ceFee       = parseFloat(document.getElementById('ceFeeInp').value) || 0;
+  try { localStorage.setItem('ce_budget1', JSON.stringify({S, eId, sId, pId, iId, pmId})); } catch(e){}
+}
+
+function ld() {
+  try {
+    const r = localStorage.getItem('ce_budget1');
+    if (!r) return;
+    const d = JSON.parse(r);
+    S=d.S; eId=d.eId; sId=d.sId; pId=d.pId; iId=d.iId; pmId=d.pmId;
+    document.getElementById('coupleName').value  = S.coupleName||'';
+    document.getElementById('coupleDate').value  = S.coupleDate||'';
+    document.getElementById('coupleEmail').value = S.coupleEmail||'';
+    document.getElementById('coupleNotes').value = S.coupleNotes||'';
+    document.getElementById('ceFeeInp').value    = S.ceFee||'';
+  } catch(e){}
+}
+
+function doExport() {
+  sv();
+  const n = (S.coupleName||'budget').replace(/[^a-z0-9]/gi,'_').toLowerCase();
+  const b = new Blob([JSON.stringify({S,eId,sId,pId,iId,pmId},null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(b); a.download = n + '-budget.json'; a.click();
+}
+function doImport(e) {
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    try {
+      const d = JSON.parse(ev.target.result);
+      S=d.S; eId=d.eId; sId=d.sId; pId=d.pId; iId=d.iId; pmId=d.pmId;
+      document.getElementById('coupleName').value  = S.coupleName||'';
+      document.getElementById('coupleDate').value  = S.coupleDate||'';
+      document.getElementById('coupleEmail').value = S.coupleEmail||'';
+      document.getElementById('coupleNotes').value = S.coupleNotes||'';
+      document.getElementById('ceFeeInp').value    = S.ceFee||'';
+      sandboxCopy=null; S.sandbox=false;
+      document.getElementById('sandboxBanner').style.display='none';
+      render();
+    } catch(err) { alert('Could not read file.'); }
+  };
+  r.readAsText(f); e.target.value='';
+}
+
+// ─── MODALS ───────────────────────────────────────────────────
+function showModal(id) { document.getElementById(id).style.display='flex'; }
+function hideModal(id) { document.getElementById(id).style.display='none'; }
+
+// ─── ESCAPE ───────────────────────────────────────────────────
+function esc(s) { return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ─── DEMO DATA ────────────────────────────────────────────────
+function loadDemo() {
+  S.coupleName = 'Priya & James — 2025';
+  S.coupleDate = '14 September 2025';
+  S.coupleEmail = 'priya.james@email.com';
+  S.ceFee = 8500;
+  S.events = [
+    {
+      id:eId++, name:'Mehendi Evening', date:'12 Sep 2025', open:true,
+      services:[
+        {
+          id:sId++, name:'Catering', open:true,
+          providers:[
+            {
+              id:pId++, name:'Mas Solers Catering', open:true, notes:'Confirmed halal menu available. Contact: Marta 612 345 678',
+              status:'confirmed',
+              items:[
+                {id:iId++, description:'Cocktail canapés (80 pax)', price:3200, vatPct:10, vatShown:false},
+                {id:iId++, description:'Seated dinner 3 courses', price:5800, vatPct:10, vatShown:false},
+                {id:iId++, description:'Bar service (open bar 4h)', price:2400, vatPct:21, vatShown:false},
+              ],
+              payments:[
+                {id:pmId++, label:'Deposit 30%', pct:30, date:'01 Mar 2025', note:'Required to confirm booking'},
+                {id:pmId++, label:'Second payment', pct:40, date:'01 Jul 2025', note:''},
+                {id:pmId++, label:'Final balance', pct:30, date:'01 Sep 2025', note:'Incl. VAT'},
+              ],
+              versions:[
+                {date:'2024-11-15T10:00:00Z', note:'Initial proposal', total:10800, items:[], payments:[]}
+              ]
+            },
+            {
+              id:pId++, name:'Roc 35 Catering', open:false, notes:'Note: Núria Font connection — flag to couple',
+              status:'declined',
+              items:[
+                {id:iId++, description:'Cocktail + dinner package', price:12500, vatPct:10, vatShown:true},
+              ],
+              payments:[], versions:[]
+            }
+          ]
+        },
+        {
+          id:sId++, name:'Florals & Décor', open:true,
+          providers:[
+            {
+              id:pId++, name:'Flores Barcelona', open:true, notes:'Specialises in Indian wedding décor',
+              status:'pending',
+              items:[
+                {id:iId++, description:'Mandap floral arrangement', price:3800, vatPct:21, vatShown:false},
+                {id:iId++, description:'Table centrepieces ×10', price:1200, vatPct:21, vatShown:false},
+                {id:iId++, description:'Entrance arch', price:650, vatPct:21, vatShown:false},
+              ],
+              payments:[
+                {id:pmId++, label:'Deposit 50%', pct:50, date:'01 Apr 2025', note:''},
+                {id:pmId++, label:'Final', pct:50, date:'10 Sep 2025', note:''},
+              ],
+              versions:[]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      id:eId++, name:'Wedding Day Ceremony & Reception', date:'14 Sep 2025', open:false,
+      services:[
+        {
+          id:sId++, name:'Photography', open:true,
+          providers:[
+            {
+              id:pId++, name:'Marcos Sánchez Photography', open:true, notes:'Full day coverage 10h + second shooter',
+              status:'confirmed',
+              items:[
+                {id:iId++, description:'Full day photography (10h)', price:4200, vatPct:21, vatShown:false},
+                {id:iId++, description:'Second photographer', price:800, vatPct:21, vatShown:false},
+                {id:iId++, description:'Edited gallery (600 images)', price:0, vatPct:0, vatShown:false},
+              ],
+              payments:[
+                {id:pmId++, label:'Booking deposit', pct:25, date:'15 Jan 2025', note:''},
+                {id:pmId++, label:'Final payment', pct:75, date:'01 Sep 2025', note:''},
+              ],
+              versions:[]
+            }
+          ]
+        }
+      ]
+    }
+  ];
+  document.getElementById('coupleName').value  = S.coupleName;
+  document.getElementById('coupleDate').value  = S.coupleDate;
+  document.getElementById('coupleEmail').value = S.coupleEmail;
+  document.getElementById('ceFeeInp').value    = S.ceFee;
+}
+
+// ─── INIT ─────────────────────────────────────────────────────
+ld();
+if (!S.events.length) loadDemo();
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crystal Events — Seating Planner</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#C9A96E;--gold-l:#E8D5B0;--gold-d:#8B6914;
+  --cream:#FAF7F2;--warm:#F5F0E8;--ch:#2C2825;
+  --mid:#6B6560;--bdr:#E0D8CC;--tbg:#FFFDF9;
+  --sat:#4A7C59;--unsat:#C9783A;
+}
+body{font-family:Georgia,serif;background:var(--cream);color:var(--ch);height:100vh;overflow:hidden}
+.app{display:grid;grid-template-columns:265px 1fr;grid-template-rows:48px 1fr;height:100vh}
+
+/* TOPBAR */
+.bar{grid-column:1/-1;background:var(--ch);display:flex;align-items:center;padding:0 16px;gap:10px}
+.bar-title{font-size:15px;color:var(--gold-l);font-style:italic;letter-spacing:.05em}
+.bar-sub{font-size:11px;color:var(--mid);font-family:Arial,sans-serif}
+.bar-right{margin-left:auto;display:flex;gap:6px}
+.btn{font-family:Arial,sans-serif;font-size:11px;padding:5px 12px;border-radius:3px;cursor:pointer;border:none;transition:background .15s}
+.bg{background:transparent;border:1px solid rgba(201,169,110,.4);color:var(--gold-l)}.bg:hover{background:rgba(201,169,110,.15)}
+.bgo{background:var(--gold);color:#2C2825;font-weight:bold}.bgo:hover{background:var(--gold-l)}
+
+/* SIDEBAR */
+.sb{background:white;border-right:1px solid var(--bdr);display:flex;flex-direction:column;overflow:hidden}
+.sbs{padding:12px 14px;border-bottom:1px solid var(--bdr)}
+.lbl{font-size:9px;font-weight:bold;letter-spacing:.14em;color:var(--mid);text-transform:uppercase;margin-bottom:8px;font-family:Arial,sans-serif}
+.inp{font-family:Arial,sans-serif;font-size:12px;border:1px solid var(--bdr);border-radius:3px;padding:5px 8px;outline:none;background:var(--warm);color:var(--ch);width:100%}
+.inp:focus{border-color:var(--gold)}
+.ir{display:flex;gap:4px;margin-bottom:5px}
+.dtags{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:6px}
+.dt{font-family:Arial,sans-serif;font-size:10px;padding:2px 7px;border-radius:9px;border:1px solid var(--bdr);background:var(--warm);cursor:pointer;color:var(--mid)}
+.dt.on{background:var(--gold-l);border-color:var(--gold);color:var(--gold-d)}
+.sts{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:9px}
+.st{background:var(--warm);border-radius:3px;padding:6px 2px;text-align:center}
+.sn{font-size:18px;font-style:italic}.sl{font-size:9px;color:var(--mid);font-family:Arial,sans-serif}
+.wn{color:var(--unsat)}.ok{color:var(--sat)}
+
+/* TABLE TYPE BUTTONS */
+.ttypes{display:flex;flex-direction:column;gap:4px}
+.tt{display:flex;align-items:center;gap:8px;padding:7px 9px;border:1px solid var(--bdr);border-radius:4px;cursor:pointer;background:var(--warm);transition:all .15s}
+.tt:hover{border-color:var(--gold);background:white}
+.ttl{font-family:Arial,sans-serif;font-size:12px}
+.tts{font-family:Arial,sans-serif;font-size:10px;color:var(--mid)}
+
+/* GUEST LIST */
+.gw{flex:1;overflow-y:auto;padding:9px 12px}
+.glbl{font-family:Arial,sans-serif;font-size:9px;letter-spacing:.1em;color:var(--mid);text-transform:uppercase;margin-bottom:5px;margin-top:3px}
+.gi{display:flex;align-items:center;gap:5px;padding:5px 7px;border-radius:4px;margin-bottom:3px;background:var(--warm);border:1px solid var(--bdr);cursor:grab;user-select:none}
+.gi:hover{border-color:var(--gold)}.gi.dr{opacity:.3}
+.gi.seated{background:#F0F7F2;border-color:#BDD8C6}
+.gdot{width:6px;height:6px;border-radius:50%;background:var(--bdr);flex-shrink:0}
+.gi.seated .gdot{background:var(--sat)}
+.gno{font-family:Arial,sans-serif;font-size:10px;color:var(--mid);min-width:18px;text-align:right}
+.gname{font-family:Arial,sans-serif;font-size:12px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gdiet{font-family:Arial,sans-serif;font-size:9px;color:var(--mid);background:var(--bdr);padding:1px 4px;border-radius:7px;white-space:nowrap}
+.grm{font-size:14px;color:var(--bdr);cursor:pointer;line-height:1;flex-shrink:0}.grm:hover{color:#C06060}
+
+/* FLOOR */
+.fw{display:flex;flex-direction:column;overflow:hidden}
+.fpb{padding:7px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--bdr);background:white;font-family:Arial,sans-serif;font-size:11px;color:var(--mid);flex-wrap:wrap}
+.fl{flex:1;overflow:auto;background:var(--tbg);background-image:radial-gradient(circle,var(--bdr) 1px,transparent 1px);background-size:26px 26px;position:relative}
+.fi{position:relative;width:2000px;height:1400px}
+
+/* TABLE ELEMENTS */
+.tw{position:absolute;user-select:none}
+.tnm{display:block;width:100%;text-align:center;font-style:italic;font-size:12px;color:var(--gold-d);background:none;border:none;border-bottom:1px solid transparent;outline:none;padding:2px 3px;margin-top:2px;font-family:Georgia,serif}
+.tnm:focus{border-bottom-color:var(--gold)}
+.tdel{font-family:Arial,sans-serif;font-size:9px;color:var(--bdr);cursor:pointer;text-align:center;margin-top:1px}.tdel:hover{color:#C06060}
+
+/* MODAL */
+.mov{position:fixed;inset:0;background:rgba(44,40,37,.55);z-index:999;display:flex;align-items:center;justify-content:center}
+.mo{background:white;border-radius:8px;padding:22px;max-width:400px;width:92%;max-height:84vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.25)}
+.mo h2{font-size:19px;font-style:italic;margin-bottom:8px;font-family:Georgia,serif}
+.mo p{font-family:Arial,sans-serif;font-size:12px;color:var(--mid);line-height:1.7;margin-bottom:8px}
+.pn{font-family:Arial,sans-serif;font-size:11px;color:var(--mid);background:var(--warm);border-radius:4px;padding:9px 11px;line-height:1.6;border-left:2px solid var(--gold);margin-bottom:8px}
+.mbtns{display:flex;gap:7px;justify-content:flex-end;margin-top:12px}
+code{font-size:10px;background:var(--warm);padding:1px 4px;border-radius:2px;font-family:monospace}
+
+@media print{
+  .bar,.sb,.fpb{display:none!important}
+  .app{display:block}
+  .fw,.fl{overflow:visible;display:block}
+  .fi{width:auto;height:auto;position:static}
+  .fl{background:white;background-image:none}
+  .tw{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- TOPBAR -->
+<div class="bar">
+  <span class="bar-title">Crystal Events</span>
+  <span class="bar-sub">· Seating Planner</span>
+  <div class="bar-right">
+    <button class="btn bg" onclick="showM('pm')">⚑ Privacy</button>
+    <button class="btn bg" onclick="doExport()">↓ Save</button>
+    <button class="btn bg" onclick="document.getElementById('impF').click()">↑ Load</button>
+    <input type="file" id="impF" accept=".json" style="display:none" onchange="doImport(event)">
+    <button class="btn bg" onclick="showM('xlm')">⇪ CSV import</button>
+    <input type="file" id="csvF" accept=".csv,.txt" style="display:none" onchange="doCSV(event)">
+    <button class="btn bgo" onclick="window.print()">⎙ Print / PDF</button>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<div class="sb">
+  <div class="sbs">
+    <div class="lbl">Wedding</div>
+    <input class="inp" id="wn" placeholder="Couple names & year…" oninput="sv()">
+    <div class="sts">
+      <div class="st"><div class="sn" id="stT">0</div><div class="sl">Guests</div></div>
+      <div class="st"><div class="sn wn" id="stU">0</div><div class="sl">Unseated</div></div>
+      <div class="st"><div class="sn ok" id="stS">0</div><div class="sl">Seated</div></div>
+      <div class="st"><div class="sn" id="stTb">0</div><div class="sl">Tables</div></div>
+    </div>
+  </div>
+
+  <div class="sbs">
+    <div class="lbl">Add Guest</div>
+    <div class="ir">
+      <input class="inp" id="gNum" type="number" min="1" placeholder="#" style="width:46px;flex-shrink:0" title="Guest order number">
+      <input class="inp" id="gF" placeholder="First name" onkeydown="if(event.key==='Enter')document.getElementById('gL').focus()">
+      <input class="inp" id="gL" placeholder="Last name" onkeydown="if(event.key==='Enter')addG()">
+    </div>
+    <div class="dtags">
+      <span class="dt" data-d="Veg" onclick="togD(this)">Veg</span>
+      <span class="dt" data-d="Vegan" onclick="togD(this)">Vegan</span>
+      <span class="dt" data-d="Halal" onclick="togD(this)">Halal</span>
+      <span class="dt" data-d="Kosher" onclick="togD(this)">Kosher</span>
+      <span class="dt" data-d="GF" onclick="togD(this)">GF</span>
+      <span class="dt" data-d="Allergy" onclick="togD(this)">Allergy</span>
+    </div>
+    <button class="btn bgo" style="width:100%" onclick="addG()">+ Add guest</button>
+  </div>
+
+  <div class="sbs">
+    <div class="lbl">Add Table</div>
+    <div class="ttypes">
+      <div class="tt" onclick="addT('r8')">
+        <svg width="26" height="26" viewBox="0 0 26 26">
+          <circle cx="13" cy="13" r="9" fill="none" stroke="#C9A96E" stroke-width="1.5"/>
+          <circle cx="13" cy="4" r="2.1" fill="#E8D5B0" stroke="#C9A96E" stroke-width="1"/>
+          <circle cx="21" cy="8" r="2.1" fill="#E8D5B0" stroke="#C9A96E" stroke-width="1"/>
+          <circle cx="21" cy="18" r="2.1" fill="#E8D5B0" stroke="#C9A96E" stroke-width="1"/>
+          <circle cx="13" cy="22" r="2.1" fill="#E8D5B0" stroke="#C9A96E" stroke-width="1"/>
+          <circle cx="5" cy="18" r="2.1" fill="#E8D5B0" stroke="#C9A96E" stroke-width="1"/>
+          <circle cx="5" cy="8" r="2.1" fill="#E8D5B0" stroke="#C9A96E" stroke-width="1"/>
+        </svg>
+        <div><div class="ttl">Round — up to 8 seats</div><div class="tts">Standard round table</div></div>
+      </div>
+      <div class="tt" onclick="addT('r11')">
+        <svg width="26" height="26" viewBox="0 0 26 26">
+          <circle cx="13" cy="13" r="9" fill="none" stroke="#C9A96E" stroke-width="1.5"/>
+          <circle cx="13" cy="4" r="1.8" fill="#E8D5B0" stroke="#C9A96E" stroke-width="1"/>
+          <circle cx="18.9" cy="5.8" r="1.8" fill="#E8D5B0" stroke="#C9A96E" stroke-width="1"/>
+          <circle cx="22.5" cy="11" r="1.8" fill="#E8D5B0" stroke="#C9A96E" stroke-width="1"/>
+          <circle cx="22.5" cy="17" r="1.8" fill="#E8D5B0" stroke="#C9A96E" stroke-width="1"/>
+          <circle cx="18.9" cy="22" r="1.8" fill="#E8D5B0" stroke="#C9A96E" stroke-width="1"/>
+          <circle cx="13" cy="23.5" r="1.8" fill="#E8D5B0" stroke="#C9A96E" stroke-width="1"/>
+          <circle cx="7.1" cy="22" r="1.8" fill="#E8D5B0" stroke="#C9A96E" stroke-width="1"/>
+          <circle cx="3.5" cy="17" r="1.8" fill="#E8D5B0" stroke="#C9A96E" stroke-width="1"/>
+          <circle cx="3.5" cy="11" r="1.8" fill="#E8D5B0" stroke="#C9A96E" stroke-width="1"/>
+          <circle cx="7.1" cy="5.8" r="1.8" fill="#E8D5B0" stroke="#C9A96E" stroke-width="1"/>
+        </svg>
+        <div><div class="ttl">Round — up to 11 seats</div><div class="tts">Large round table</div></div>
+      </div>
+      <div class="tt" onclick="addT('lg')">
+        <svg width="44" height="18" viewBox="0 0 44 18">
+          <rect x="2" y="5" width="40" height="8" rx="2" fill="none" stroke="#C9A96E" stroke-width="1.5"/>
+          <circle cx="7" cy="2" r="1.8" fill="#E8D5B0" stroke="#C9A96E" stroke-width="1"/>
+          <circle cx="15" cy="2" r="1.8" fill="#E8D5B0" stroke="#C9A96E" stroke-width="1"/>
+          <circle cx="23" cy="2" r="1.8" fill="#E8D5B0" stroke="#C9A96E" stroke-width="1"/>
+          <circle cx="31" cy="2" r="1.8" fill="#E8D5B0" stroke="#C9A96E" stroke-width="1"/>
+          <circle cx="7" cy="16" r="1.8" fill="#E8D5B0" stroke="#C9A96E" stroke-width="1"/>
+          <circle cx="15" cy="16" r="1.8" fill="#E8D5B0" stroke="#C9A96E" stroke-width="1"/>
+          <circle cx="23" cy="16" r="1.8" fill="#E8D5B0" stroke="#C9A96E" stroke-width="1"/>
+          <circle cx="31" cy="16" r="1.8" fill="#E8D5B0" stroke="#C9A96E" stroke-width="1"/>
+        </svg>
+        <div><div class="ttl">Long table 2m — 8 seats</div><div class="tts">Expandable · join for shapes</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="gw" id="gList"></div>
+</div>
+
+<!-- FLOOR PLAN -->
+<div class="fw">
+  <div class="fpb">
+    <span>Click a numbered seat to assign a guest &nbsp;·&nbsp; Right-click occupied seat to clear &nbsp;·&nbsp; Drag table to reposition</span>
+    <span style="margin-left:auto;color:#ccc">Drag guest to floor area to unseat</span>
+  </div>
+  <div class="fl" id="floor">
+    <div class="fi" id="fi"
+      ondragover="event.preventDefault()"
+      ondrop="flDrop(event)">
+    </div>
+  </div>
+</div>
+
+</div><!-- end .app -->
+
+<!-- PRIVACY MODAL -->
+<div class="mov" id="pm" style="display:none" onclick="if(event.target===this)hideM('pm')">
+<div class="mo">
+  <h2>Privacy &amp; Data</h2>
+  <div class="pn"><strong>No data ever leaves this browser.</strong> Guest names, dietary info and seating exist only on this device — nothing is sent to any server.</div>
+  <p><strong>Share with a couple:</strong> Use <em>Save</em> to download a <code>.json</code> file, email it. They open it with <em>Load</em> on their own device. Wedding-specific and completely private.</p>
+  <p><strong>CSV import format:</strong><br><code>Order, First name, Last name, Dietary</code><br>e.g. <code>1, Sarah, Johnson, Halal</code> — header row is skipped automatically.</p>
+  <p><strong>Archive:</strong> Save as <code>01-couples/[name]/seating-plan.json</code></p>
+  <p><strong>Print / PDF:</strong> Sidebar hides on print. Only the floor plan exports.</p>
+  <div class="mbtns"><button class="btn bgo" onclick="hideM('pm')">Got it</button></div>
+</div>
+</div>
+
+<!-- CSV MODAL -->
+<div class="mov" id="xlm" style="display:none" onclick="if(event.target===this)hideM('xlm')">
+<div class="mo">
+  <h2>Import from CSV</h2>
+  <p>In Excel: <strong>File → Save As → CSV</strong>. Columns must be in this order:</p>
+  <div class="pn">
+    <code>Order, First name, Last name, Dietary</code><br><br>
+    Example row: <code>1, Sarah, Johnson, Halal</code><br>
+    Header row is skipped automatically.<br>
+    Dietary is optional — leave blank if not needed.<br>
+    Multiple dietary tags: use <code>GF/Vegan</code>
+  </div>
+  <p>Existing guests (same name) will not be duplicated.</p>
+  <div class="mbtns">
+    <button class="btn bg" onclick="hideM('xlm')">Cancel</button>
+    <button class="btn bgo" onclick="hideM('xlm');document.getElementById('csvF').click()">Choose CSV file</button>
+  </div>
+</div>
+</div>
+
+<!-- SEAT PICKER MODAL -->
+<div class="mov" id="spm" style="display:none" onclick="if(event.target===this){hideM('spm');pSeat=null}">
+<div class="mo">
+  <h2>Assign seat</h2>
+  <p style="margin-bottom:9px">Choose a guest for this seat:</p>
+  <div id="spList"></div>
+  <div class="mbtns"><button class="btn bg" onclick="hideM('spm');pSeat=null">Cancel</button></div>
+</div>
+</div>
+
+<script>
+// ── STATE ─────────────────────────────────────
+let S = { wn:'', guests:[], tables:[] };
+let gId=1, tId=1, aD=null, dragGId=null, pSeat=null;
+let movT=null, movOX=0, movOY=0;
+
+// ── DIET ──────────────────────────────────────
+function togD(el) {
+  document.querySelectorAll('.dt').forEach(t => t.classList.remove('on'));
+  aD = (aD === el.dataset.d) ? null : el.dataset.d;
+  if (aD) el.classList.add('on');
+}
+
+// ── GUESTS ────────────────────────────────────
+function nxtNum() {
+  const ns = S.guests.map(g => g.num).filter(n => n > 0);
+  return ns.length ? Math.max(...ns) + 1 : 1;
+}
+
+function addG() {
+  const f = document.getElementById('gF').value.trim();
+  const l = document.getElementById('gL').value.trim();
+  if (!f && !l) return;
+  const n = parseInt(document.getElementById('gNum').value) || nxtNum();
+  S.guests.push({ id:gId++, num:n, first:f, last:l, diet:aD||'', tId:null, sIdx:null });
+  S.guests.sort((a,b) => a.num - b.num);
+  ['gF','gL','gNum'].forEach(id => document.getElementById(id).value = '');
+  aD = null;
+  document.querySelectorAll('.dt').forEach(t => t.classList.remove('on'));
+  render(); sv();
+  document.getElementById('gF').focus();
+}
+
+function rmG(id) { S.guests = S.guests.filter(g => g.id !== id); render(); sv(); }
+
+function unseat(id) {
+  const g = S.guests.find(x => x.id === id);
+  if (g) { g.tId = null; g.sIdx = null; }
+  render(); sv();
+}
+
+// ── TABLES ────────────────────────────────────
+const TD = {
+  r8:  { type:'r8',  cap:8,  w:164, h:164, label:'Table' },
+  r11: { type:'r11', cap:11, w:194, h:194, label:'Table' },
+  lg:  { type:'lg',  cap:8,  w:310, h:104, label:'Long Table' }
+};
+
+function addT(type) {
+  const d = TD[type];
+  const c = S.tables.length;
+  const cols = Math.floor(1800 / (d.w + 55));
+  S.tables.push({
+    id: tId++, type: d.type, cap: d.cap, w: d.w, h: d.h,
+    name: d.label + ' ' + (c + 1),
+    x: 40 + (c % cols) * (d.w + 55),
+    y: 40 + Math.floor(c / cols) * (d.h + 75)
+  });
+  render(); sv();
+}
+
+function delT(id) {
+  S.guests.forEach(g => { if (g.tId === id) { g.tId = null; g.sIdx = null; } });
+  S.tables = S.tables.filter(t => t.id !== id);
+  render(); sv();
+}
+
+function renT(id, v) {
+  const t = S.tables.find(x => x.id === id);
+  if (t) t.name = v;
+  sv();
+}
+
+// ── SEAT POSITIONS ────────────────────────────
+function sPos(t) {
+  const p = [];
+  if (t.type !== 'lg') {
+    const cx = t.w/2, cy = t.h/2;
+    const r = t.w * (t.type === 'r8' ? 0.38 : 0.40);
+    for (let i = 0; i < t.cap; i++) {
+      const a = 2 * Math.PI * i / t.cap - Math.PI/2;
+      p.push({ x: cx + r*Math.cos(a), y: cy + r*Math.sin(a) });
+    }
+  } else {
+    const cols = 4, pad = 30, step = (t.w - pad*2) / (cols-1);
+    for (let i = 0; i < cols; i++) p.push({ x: pad + i*step, y: 14 });
+    for (let i = 0; i < cols; i++) p.push({ x: pad + i*step, y: t.h - 14 });
+  }
+  return p;
+}
+
+// ── SEAT INTERACTION ──────────────────────────
+function clkSeat(tid, si) {
+  const occ = S.guests.find(g => g.tId === tid && g.sIdx === si);
+  if (occ) { unseat(occ.id); return; }
+  const un = S.guests.filter(g => g.tId === null);
+  if (!un.length) return;
+  pSeat = { tid, si };
+  const sl = document.getElementById('spList');
+  sl.innerHTML = '';
+  un.forEach(g => {
+    const d = document.createElement('div');
+    d.className = 'gi';
+    d.style.cursor = 'pointer';
+    d.style.marginBottom = '3px';
+    d.innerHTML = `<div class="gdot"></div><div class="gno">${g.num}</div><div class="gname">${g.first} ${g.last}</div>${g.diet ? `<div class="gdiet">${g.diet}</div>` : ''}`;
+    d.onclick = () => doAssign(g.id);
+    sl.appendChild(d);
+  });
+  showM('spm');
+}
+
+function doAssign(gid) {
+  if (!pSeat) return;
+  const g = S.guests.find(x => x.id === gid);
+  if (!g) return;
+  if (g.tId !== null) { g.tId = null; g.sIdx = null; }
+  const occ = S.guests.find(x => x.tId === pSeat.tid && x.sIdx === pSeat.si);
+  if (occ) { occ.tId = null; occ.sIdx = null; }
+  g.tId = pSeat.tid; g.sIdx = pSeat.si;
+  pSeat = null; hideM('spm');
+  render(); sv();
+}
+
+function rcSeat(e, tid, si) {
+  e.preventDefault();
+  const occ = S.guests.find(g => g.tId === tid && g.sIdx === si);
+  if (occ) unseat(occ.id);
+}
+
+// ── DRAG GUESTS ───────────────────────────────
+function gDS(e, id) {
+  dragGId = id;
+  e.dataTransfer.effectAllowed = 'move';
+  setTimeout(() => {
+    const el = document.querySelector(`[data-gid="${id}"]`);
+    if (el) el.classList.add('dr');
+  }, 0);
+}
+function gDE() {
+  dragGId = null;
+  document.querySelectorAll('.dr').forEach(el => el.classList.remove('dr'));
+}
+function flDrop(e) {
+  e.preventDefault();
+  if (dragGId === null) return;
+  const g = S.guests.find(x => x.id === dragGId);
+  if (g) { g.tId = null; g.sIdx = null; }
+  dragGId = null; render(); sv();
+}
+
+// ── DRAG TABLES ───────────────────────────────
+function tMD(e, id) {
+  if (e.button !== 0 || e.target.tagName === 'INPUT') return;
+  e.preventDefault();
+  movT = id;
+  const fr = document.getElementById('fi').getBoundingClientRect();
+  const t = S.tables.find(x => x.id === id);
+  movOX = e.clientX - fr.left - t.x;
+  movOY = e.clientY - fr.top - t.y;
+  document.addEventListener('mousemove', tMM);
+  document.addEventListener('mouseup', tMU);
+}
+function tMM(e) {
+  if (!movT) return;
+  const fr = document.getElementById('fi').getBoundingClientRect();
+  const t = S.tables.find(x => x.id === movT);
+  if (!t) return;
+  t.x = Math.max(0, e.clientX - fr.left - movOX);
+  t.y = Math.max(0, e.clientY - fr.top - movOY);
+  const el = document.querySelector(`[data-tw="${movT}"]`);
+  if (el) { el.style.left = t.x + 'px'; el.style.top = t.y + 'px'; }
+}
+function tMU() {
+  movT = null;
+  document.removeEventListener('mousemove', tMM);
+  document.removeEventListener('mouseup', tMU);
+  sv();
+}
+
+// ── RENDER TABLE ──────────────────────────────
+function mkTable(t) {
+  const wrap = document.createElement('div');
+  wrap.className = 'tw';
+  wrap.setAttribute('data-tw', t.id);
+  wrap.style.cssText = `left:${t.x}px;top:${t.y}px;width:${t.w}px`;
+
+  const seats = sPos(t);
+  const SR = 12;
+  let svg = '';
+
+  if (t.type !== 'lg') {
+    const cx = t.w/2, cy = t.h/2;
+    const R = t.w * (t.type === 'r8' ? 0.30 : 0.31);
+    svg += `<circle cx="${cx}" cy="${cy}" r="${R}" fill="white" stroke="#C9A96E" stroke-width="1.5" style="cursor:move"/>`;
+    const tn = t.name.length > 13 ? t.name.slice(0,11) + '…' : t.name;
+    svg += `<text x="${cx}" y="${cy+4}" text-anchor="middle" font-family="Georgia,serif" font-style="italic" font-size="9.5" fill="#8B6914" style="pointer-events:none">${tn}</text>`;
+  } else {
+    svg += `<rect x="12" y="22" width="${t.w-24}" height="${t.h-44}" rx="5" fill="white" stroke="#C9A96E" stroke-width="1.5" style="cursor:move"/>`;
+    const tn = t.name.length > 18 ? t.name.slice(0,16) + '…' : t.name;
+    svg += `<text x="${t.w/2}" y="${t.h/2+4}" text-anchor="middle" font-family="Georgia,serif" font-style="italic" font-size="9.5" fill="#8B6914" style="pointer-events:none">${tn}</text>`;
+  }
+
+  seats.forEach((s, i) => {
+    const g = S.guests.find(x => x.tId === t.id && x.sIdx === i);
+    const fill   = g ? '#EAF3DE' : '#F5F0E8';
+    const stroke = g ? '#4A7C59' : '#E0D8CC';
+    const lbl    = g ? (g.first || g.last).slice(0, 7) : String(i + 1);
+    const fs     = g ? '6' : '8';
+    const fc     = g ? '#4A7C59' : '#6B6560';
+    svg += `
+      <g onclick="clkSeat(${t.id},${i})" oncontextmenu="rcSeat(event,${t.id},${i})" style="cursor:pointer">
+        <circle cx="${s.x}" cy="${s.y}" r="${SR}" fill="${fill}" stroke="${stroke}" stroke-width="1.2"/>
+        <text x="${s.x}" y="${s.y+2.5}" text-anchor="middle" dominant-baseline="central"
+          font-family="Arial,sans-serif" font-size="${fs}" fill="${fc}"
+          style="pointer-events:none">${lbl}</text>
+        ${g && g.diet ? `<circle cx="${s.x+8}" cy="${s.y-8}" r="3" fill="#C9A96E" opacity=".9"/>` : ''}
+      </g>`;
+  });
+
+  const svgEl = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svgEl.setAttribute('width', t.w);
+  svgEl.setAttribute('height', t.h);
+  svgEl.setAttribute('viewBox', `0 0 ${t.w} ${t.h}`);
+  svgEl.innerHTML = svg;
+  svgEl.style.cursor = 'move';
+  svgEl.style.display = 'block';
+  svgEl.addEventListener('mousedown', e => tMD(e, t.id));
+
+  const ni = document.createElement('input');
+  ni.className = 'tnm';
+  ni.value = t.name;
+  ni.addEventListener('input', () => renT(t.id, ni.value));
+  ni.addEventListener('mousedown', e => e.stopPropagation());
+
+  const db = document.createElement('div');
+  db.className = 'tdel';
+  db.textContent = 'Remove table';
+  db.onclick = () => delT(t.id);
+
+  wrap.appendChild(svgEl);
+  wrap.appendChild(ni);
+  wrap.appendChild(db);
+  return wrap;
+}
+
+// ── RENDER ALL ────────────────────────────────
+function render() {
+  // Stats
+  const tot = S.guests.length;
+  const sat = S.guests.filter(g => g.tId !== null).length;
+  document.getElementById('stT').textContent  = tot;
+  document.getElementById('stS').textContent  = sat;
+  document.getElementById('stU').textContent  = tot - sat;
+  document.getElementById('stTb').textContent = S.tables.length;
+
+  // Guest list
+  const gl = document.getElementById('gList');
+  gl.innerHTML = '';
+  const un = S.guests.filter(g => g.tId === null);
+  const se = S.guests.filter(g => g.tId !== null);
+
+  if (!S.guests.length) {
+    gl.innerHTML = '<div style="font-family:Arial,sans-serif;font-size:11px;color:#6B6560;text-align:center;padding:18px;font-style:italic">No guests yet.<br>Add above or import via CSV.</div>';
+  }
+
+  if (un.length) {
+    const lb = document.createElement('div');
+    lb.className = 'glbl'; lb.textContent = 'Unseated'; gl.appendChild(lb);
+    un.forEach(g => {
+      const d = document.createElement('div');
+      d.className = 'gi';
+      d.setAttribute('data-gid', g.id);
+      d.setAttribute('draggable', 'true');
+      d.innerHTML = `<div class="gdot"></div><div class="gno">${g.num}</div><div class="gname">${g.first} ${g.last}</div>${g.diet ? `<div class="gdiet">${g.diet}</div>` : ''}<div class="grm" onclick="rmG(${g.id})">×</div>`;
+      d.addEventListener('dragstart', e => gDS(e, g.id));
+      d.addEventListener('dragend', gDE);
+      gl.appendChild(d);
+    });
+  }
+
+  if (se.length) {
+    const lb = document.createElement('div');
+    lb.className = 'glbl'; lb.style.marginTop = '8px'; lb.textContent = 'Seated'; gl.appendChild(lb);
+    se.forEach(g => {
+      const d = document.createElement('div');
+      d.className = 'gi seated';
+      d.innerHTML = `<div class="gdot"></div><div class="gno">${g.num}</div><div class="gname">${g.first} ${g.last}</div>${g.diet ? `<div class="gdiet">${g.diet}</div>` : ''}<div class="grm" title="Remove from table" onclick="unseat(${g.id})">↩</div>`;
+      gl.appendChild(d);
+    });
+  }
+
+  // Floor plan
+  const fi = document.getElementById('fi');
+  fi.querySelectorAll('.tw').forEach(el => el.remove());
+  S.tables.forEach(t => fi.appendChild(mkTable(t)));
+}
+
+// ── SAVE / LOAD ───────────────────────────────
+function sv() {
+  S.wn = document.getElementById('wn').value;
+  try { localStorage.setItem('ce_sp5', JSON.stringify({ S, gId, tId })); } catch(e) {}
+}
+function ld() {
+  try {
+    const r = localStorage.getItem('ce_sp5');
+    if (!r) return;
+    const d = JSON.parse(r);
+    S = d.S; gId = d.gId; tId = d.tId;
+    document.getElementById('wn').value = S.wn || '';
+  } catch(e) {}
+}
+function doExport() {
+  sv();
+  const n = (S.wn || 'seating').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+  const b = new Blob([JSON.stringify({ S, gId, tId }, null, 2)], { type:'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(b); a.download = n + '.json'; a.click();
+}
+function doImport(e) {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    try {
+      const d = JSON.parse(ev.target.result);
+      S = d.S; gId = d.gId; tId = d.tId;
+      document.getElementById('wn').value = S.wn || '';
+      render();
+    } catch(err) { alert('Could not read file. Make sure it is a valid seating plan .json'); }
+  };
+  r.readAsText(f);
+  e.target.value = '';
+}
+
+// ── CSV IMPORT (no library needed) ────────────
+function doCSV(e) {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    const lines = ev.target.result.split(/\r?\n/).filter(l => l.trim());
+    let imp = 0;
+    lines.forEach((line, i) => {
+      // Simple CSV split (handles basic quoting)
+      const cols = line.split(',').map(c => c.trim().replace(/^"|"$/g, ''));
+      if (i === 0 && isNaN(cols[0])) return; // skip header
+      const num   = parseInt(cols[0]) || nxtNum();
+      const first = (cols[1] || '').trim();
+      const last  = (cols[2] || '').trim();
+      const diet  = (cols[3] || '').trim();
+      if (!first && !last) return;
+      if (S.guests.find(g => g.first === first && g.last === last)) return; // no duplicates
+      S.guests.push({ id:gId++, num, first, last, diet, tId:null, sIdx:null });
+      imp++;
+    });
+    S.guests.sort((a, b) => a.num - b.num);
+    render(); sv();
+    alert(`Imported ${imp} guest${imp !== 1 ? 's' : ''} successfully.`);
+  };
+  r.readAsText(f);
+  e.target.value = '';
+}
+
+// ── MODALS ────────────────────────────────────
+function showM(id) { document.getElementById(id).style.display = 'flex'; }
+function hideM(id) { document.getElementById(id).style.display = 'none'; }
+
+// ── INIT ──────────────────────────────────────
+ld();
+if (!S.guests.length && !S.tables.length) {
+  // Demo data
+  S.guests = [
+    { id:gId++, num:1, first:'Emma',  last:'Williams', diet:'',       tId:null, sIdx:null },
+    { id:gId++, num:2, first:'Raj',   last:'Patel',    diet:'Halal',  tId:null, sIdx:null },
+    { id:gId++, num:3, first:'Sarah', last:'Cohen',    diet:'Kosher', tId:null, sIdx:null },
+    { id:gId++, num:4, first:'Priya', last:'Sharma',   diet:'Veg',    tId:null, sIdx:null },
+    { id:gId++, num:5, first:'James', last:'MacLeod',  diet:'',       tId:null, sIdx:null },
+    { id:gId++, num:6, first:'Aisha', last:'Al-Rashid',diet:'Halal',  tId:null, sIdx:null },
+  ];
+  S.tables = [
+    { id:tId++, type:'r8',  cap:8,  w:164, h:164, name:'Table 1',     x:30,  y:30  },
+    { id:tId++, type:'r11', cap:11, w:194, h:194, name:'Sweethearts',  x:240, y:20  },
+    { id:tId++, type:'lg',  cap:8,  w:310, h:104, name:'Head Table',   x:490, y:55  },
+  ];
+}
+render();
+</script>
+</body>
+</html>
