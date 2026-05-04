@@ -10,7 +10,6 @@
     "./zod": "./src/zod/index.ts"
   },
   "scripts": {
-    "lint": "eslint src",
     "typecheck": "tsc --noEmit",
     "codegen": "supabase gen types typescript --local > src/types/database.ts"
   },

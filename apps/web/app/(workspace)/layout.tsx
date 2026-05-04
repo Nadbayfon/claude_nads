@@ -15,7 +15,7 @@ export default async function WorkspaceLayout({
     .from("team_member")
     .select("display_name, role")
     .eq("auth_user_id", user.id)
-    .maybeSingle();
+    .maybeSingle<{ display_name: string; role: string }>();
 
   return (
     <div className="min-h-dvh flex flex-col">

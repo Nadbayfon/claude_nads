@@ -7,20 +7,21 @@ const PROMPT_PATH = resolve(
   "00-context-company.md",
 );
 
-let cached: string | null = null;
+let cached: string | undefined;
 
 export function systemPrompt(): string {
-  if (cached === null) {
-    cached = readFileSync(PROMPT_PATH, "utf8");
-    if (Buffer.byteLength(cached, "utf8") > 50_000) {
+  if (cached === undefined) {
+    const contents = readFileSync(PROMPT_PATH, "utf8");
+    if (Buffer.byteLength(contents, "utf8") > 50_000) {
       throw new Error(
         `prompts/00-context-company.md exceeds 50 KB; review before shipping`,
       );
     }
+    cached = contents;
   }
   return cached;
 }
 
 export function reloadSystemPrompt(): void {
-  cached = null;
+  cached = undefined;
 }
