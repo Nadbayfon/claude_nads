@@ -74,4 +74,22 @@ invoke it via the Skill tool rather than reasoning from scratch:
 
 ## Running
 
-(Filled in at Phase 1 once the Next.js app exists.)
+```sh
+pnpm install
+pnpm --filter web dev      # Next.js on http://localhost:3000
+pnpm --filter web typecheck
+pnpm typecheck             # all packages
+pnpm lint
+```
+
+Local Supabase requires the Supabase CLI:
+
+```sh
+supabase start
+supabase db reset          # applies packages/db/migrations/*.sql
+pnpm --filter db codegen   # regenerate src/types/database.ts
+```
+
+`apps/web/.env.example` lists the env vars. Copy to `.env.local`
+and fill in `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+to sign in.

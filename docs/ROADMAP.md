@@ -2,8 +2,8 @@
 
 | Phase | Title | Status | Target weeks |
 |---|---|---|---|
-| 0 | Specs (no code) | **in progress** | 1 |
-| 1 | Scaffold + auth + design system | not started | 1 |
+| 0 | Specs (no code) | done (PR #1) | 1 |
+| 1 | Scaffold + auth + design system | **in progress** | 1 |
 | 2 | Couples / projects / events | not started | 1 |
 | 3 | Budget module + AI proposal extraction | not started | 2 |
 | 3.5 | Master AI v1 — in-app chat panel | not started | 1.5 |
