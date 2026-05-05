@@ -6,7 +6,7 @@ export default function DashboardPage() {
       <div>
         <h1 className="text-3xl">Welcome</h1>
         <p className="mt-2 text-muted">
-          Phase 2 — couples and projects are live.
+          Phase 3 — couples, projects, events, and tree budgets are live.
         </p>
       </div>
 
@@ -14,7 +14,7 @@ export default function DashboardPage() {
         <Link href="/couples">
           <Card title="Couples" body="Manage couples, wedding projects, and sub-events." live />
         </Link>
-        <Card title="Budgets" body="Phase 3 — tree budgets with AI proposal extraction." />
+        <Card title="Budgets" body="Phase 3 — tree budgets, VAT, milestones (open from a couple's page)." live />
         <Card title="Master AI" body="Phase 3.5 — in-app chat panel." />
         <Card title="Comms log" body="Phase 4 — email-to-AI + per-planner Gmail/M365." />
         <Card title="Seating" body="Phase 5 — port from the HTML tool." />

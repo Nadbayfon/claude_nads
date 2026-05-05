@@ -114,13 +114,21 @@ export default async function CoupleDetailPage({
               <p className="mt-1 text-sm text-muted">{project.name}</p>
             )}
           </div>
-          {project && (
-            <span
-              className={`rounded-full px-3 py-1 text-sm font-medium ${STATUS_COLOURS[project.status] ?? "bg-cream text-charcoal"}`}
+          <div className="flex items-center gap-3">
+            <Link
+              href={`/couples/${coupleId}/budget`}
+              className="rounded-lg border border-gold/40 bg-cream/50 px-3 py-1.5 text-sm font-medium text-gold-dark hover:bg-cream"
             >
-              {STATUS_LABELS[project.status] ?? project.status}
-            </span>
-          )}
+              Budget →
+            </Link>
+            {project && (
+              <span
+                className={`rounded-full px-3 py-1 text-sm font-medium ${STATUS_COLOURS[project.status] ?? "bg-cream text-charcoal"}`}
+              >
+                {STATUS_LABELS[project.status] ?? project.status}
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="mt-4 flex flex-wrap gap-6 text-sm">

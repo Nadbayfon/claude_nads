@@ -340,6 +340,312 @@ export type Database = {
           },
         ]
       }
+      provider: {
+        Row: {
+          category: Database["public"]["Enums"]["provider_category"]
+          conflict_team_member_id: number | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          dietary_capabilities: string[]
+          email: string | null
+          hindu_sikh_experience: boolean
+          id: number
+          is_internal_conflict: boolean
+          jewish_experience: boolean
+          languages: string[]
+          legal_name: string
+          notes: string | null
+          org_id: number
+          phone_e164: string | null
+          public_id: string
+          trade_name: string | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["provider_category"]
+          conflict_team_member_id?: number | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          dietary_capabilities?: string[]
+          email?: string | null
+          hindu_sikh_experience?: boolean
+          id?: number
+          is_internal_conflict?: boolean
+          jewish_experience?: boolean
+          languages?: string[]
+          legal_name: string
+          notes?: string | null
+          org_id: number
+          phone_e164?: string | null
+          public_id?: string
+          trade_name?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["provider_category"]
+          conflict_team_member_id?: number | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          dietary_capabilities?: string[]
+          email?: string | null
+          hindu_sikh_experience?: boolean
+          id?: number
+          is_internal_conflict?: boolean
+          jewish_experience?: boolean
+          languages?: string[]
+          legal_name?: string
+          notes?: string | null
+          org_id?: number
+          phone_e164?: string | null
+          public_id?: string
+          trade_name?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
+      budget_service: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          event_id: number
+          id: number
+          name: string
+          notes: string | null
+          public_id: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          event_id: number
+          id?: number
+          name: string
+          notes?: string | null
+          public_id?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          event_id?: number
+          id?: number
+          name?: string
+          notes?: string | null
+          public_id?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      budget_provider_option: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          display_name: string
+          id: number
+          notes: string | null
+          provider_id: number | null
+          public_id: string
+          service_id: number
+          sort_order: number
+          status: Database["public"]["Enums"]["provider_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          display_name: string
+          id?: number
+          notes?: string | null
+          provider_id?: number | null
+          public_id?: string
+          service_id: number
+          sort_order?: number
+          status?: Database["public"]["Enums"]["provider_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          display_name?: string
+          id?: number
+          notes?: string | null
+          provider_id?: number | null
+          public_id?: string
+          service_id?: number
+          sort_order?: number
+          status?: Database["public"]["Enums"]["provider_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      budget_line_item: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string
+          id: number
+          notes: string | null
+          price_eur: number
+          provider_option_id: number
+          public_id: string
+          sort_order: number
+          updated_at: string
+          vat_inclusive: boolean
+          vat_pct: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description: string
+          id?: number
+          notes?: string | null
+          price_eur?: number
+          provider_option_id: number
+          public_id?: string
+          sort_order?: number
+          updated_at?: string
+          vat_inclusive?: boolean
+          vat_pct?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: number
+          notes?: string | null
+          price_eur?: number
+          provider_option_id?: number
+          public_id?: string
+          sort_order?: number
+          updated_at?: string
+          vat_inclusive?: boolean
+          vat_pct?: number
+        }
+        Relationships: []
+      }
+      payment_milestone: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          due_date: string | null
+          due_date_text: string | null
+          id: number
+          label: string
+          notes: string | null
+          paid_at: string | null
+          pct: number
+          provider_option_id: number
+          public_id: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          due_date?: string | null
+          due_date_text?: string | null
+          id?: number
+          label: string
+          notes?: string | null
+          paid_at?: string | null
+          pct: number
+          provider_option_id: number
+          public_id?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          due_date?: string | null
+          due_date_text?: string | null
+          id?: number
+          label?: string
+          notes?: string | null
+          paid_at?: string | null
+          pct?: number
+          provider_option_id?: number
+          public_id?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      budget_version: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: number
+          is_sandbox: boolean
+          label: string
+          notes: string | null
+          public_id: string
+          snapshot_blob: Json
+          total_eur: number | null
+          wedding_project_id: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: number
+          is_sandbox?: boolean
+          label: string
+          notes?: string | null
+          public_id?: string
+          snapshot_blob: Json
+          total_eur?: number | null
+          wedding_project_id: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: number
+          is_sandbox?: boolean
+          label?: string
+          notes?: string | null
+          public_id?: string
+          snapshot_blob?: Json
+          total_eur?: number | null
+          wedding_project_id?: number
+        }
+        Relationships: []
+      }
+      currency_fx_snapshot: {
+        Row: {
+          base_ccy: string
+          fetched_at: string
+          id: number
+          rate: number
+          source: string
+          target_ccy: string
+        }
+        Insert: {
+          base_ccy: string
+          fetched_at?: string
+          id?: number
+          rate: number
+          source?: string
+          target_ccy: string
+        }
+        Update: {
+          base_ccy?: string
+          fetched_at?: string
+          id?: number
+          rate?: number
+          source?: string
+          target_ccy?: string
+        }
+        Relationships: []
+      }
     }
     Views: Record<never, never>
     Functions: {
@@ -366,6 +672,26 @@ export type Database = {
         | "reception"
         | "brunch"
         | "other"
+      provider_status: "pending" | "confirmed" | "declined"
+      provider_category:
+        | "venue"
+        | "catering"
+        | "photography"
+        | "videography"
+        | "florals"
+        | "music_dj"
+        | "music_band"
+        | "lighting"
+        | "decor"
+        | "transport"
+        | "hair_makeup"
+        | "attire"
+        | "stationery"
+        | "cake"
+        | "priest_officiant"
+        | "planner_external"
+        | "rentals"
+        | "other"
     }
     CompositeTypes: Record<string, never>
   }
@@ -379,9 +705,18 @@ export type PhotoConsentLevel = Database["public"]["Enums"]["photo_consent_level
 export type ProjectStatus = Database["public"]["Enums"]["project_status"]
 export type EventPhase = Database["public"]["Enums"]["event_phase"]
 export type EventKind = Database["public"]["Enums"]["event_kind"]
+export type ProviderStatus = Database["public"]["Enums"]["provider_status"]
+export type ProviderCategory = Database["public"]["Enums"]["provider_category"]
 
 export type OrgRow = Database["public"]["Tables"]["org"]["Row"]
 export type TeamMemberRow = Database["public"]["Tables"]["team_member"]["Row"]
 export type CoupleRow = Database["public"]["Tables"]["couple"]["Row"]
 export type WeddingProjectRow = Database["public"]["Tables"]["wedding_project"]["Row"]
 export type EventRow = Database["public"]["Tables"]["event"]["Row"]
+export type ProviderRow = Database["public"]["Tables"]["provider"]["Row"]
+export type BudgetServiceRow = Database["public"]["Tables"]["budget_service"]["Row"]
+export type BudgetProviderOptionRow = Database["public"]["Tables"]["budget_provider_option"]["Row"]
+export type BudgetLineItemRow = Database["public"]["Tables"]["budget_line_item"]["Row"]
+export type PaymentMilestoneRow = Database["public"]["Tables"]["payment_milestone"]["Row"]
+export type BudgetVersionRow = Database["public"]["Tables"]["budget_version"]["Row"]
+export type CurrencyFxSnapshotRow = Database["public"]["Tables"]["currency_fx_snapshot"]["Row"]
