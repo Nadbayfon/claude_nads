@@ -1,15 +1,19 @@
+import Link from "next/link";
+
 export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl">Welcome</h1>
         <p className="mt-2 text-muted">
-          The workspace is bare today — Phase 2 brings couples and projects.
+          Phase 2 — couples and projects are live.
         </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Card title="Couples" body="Phase 2 — create-couple wizard, sub-events." />
+        <Link href="/couples">
+          <Card title="Couples" body="Manage couples, wedding projects, and sub-events." live />
+        </Link>
         <Card title="Budgets" body="Phase 3 — tree budgets with AI proposal extraction." />
         <Card title="Master AI" body="Phase 3.5 — in-app chat panel." />
         <Card title="Comms log" body="Phase 4 — email-to-AI + per-planner Gmail/M365." />
@@ -20,10 +24,17 @@ export default function DashboardPage() {
   );
 }
 
-function Card({ title, body }: { title: string; body: string }) {
+function Card({ title, body, live }: { title: string; body: string; live?: boolean }) {
   return (
-    <div className="rounded-lg border border-muted-soft bg-white p-4 shadow-sm">
-      <div className="font-display text-lg text-charcoal">{title}</div>
+    <div className={`rounded-lg border bg-white p-4 shadow-sm transition-colors ${live ? "border-gold/40 hover:border-gold" : "border-muted-soft"}`}>
+      <div className="flex items-center gap-2">
+        <span className="font-display text-lg text-charcoal">{title}</span>
+        {live && (
+          <span className="rounded-full bg-gold/20 px-1.5 py-0.5 text-xs font-medium text-gold-dark">
+            live
+          </span>
+        )}
+      </div>
       <p className="mt-1 text-sm text-muted">{body}</p>
     </div>
   );

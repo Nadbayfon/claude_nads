@@ -21,9 +21,16 @@ export default async function WorkspaceLayout({
     <div className="min-h-dvh flex flex-col">
       <header className="border-b border-muted-soft bg-white">
         <div className="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="font-display text-xl text-charcoal">
-            Crystal Events
-          </Link>
+          <div className="flex items-center gap-6">
+            <Link href="/" className="font-display text-xl text-charcoal">
+              Crystal Events
+            </Link>
+            <nav className="hidden sm:flex items-center gap-4 text-sm">
+              <Link href="/couples" className="text-muted hover:text-charcoal transition-colors">
+                Couples
+              </Link>
+            </nav>
+          </div>
           <div className="flex items-center gap-3 text-sm text-muted">
             {member ? (
               <span>
