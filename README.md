@@ -37,8 +37,20 @@ into a shared `comm_log` entry to make it team-visible.
 
 ## Status
 
-Phase 0 — specifications. See [docs/ROADMAP.md](docs/ROADMAP.md) for the
-phase tracker and [docs/PRD.md](docs/PRD.md) for jobs-to-be-done.
+**Phase 3 published release.** Auth, couples, projects, events, and the tree
+budget module (services → providers → line items → milestones, with VAT and
+JSON round-trip to `tools/budget-tool.html`) are live.
+
+Phases 3.5 → 8 (Master AI, email, WhatsApp, calendar sync, day-of timeline,
+PWA, GDPR hardening) are scoped in [docs/ROADMAP.md](docs/ROADMAP.md) and
+will land in follow-up releases.
+
+## Deploying the published release
+
+Follow **[docs/SETUP.md](docs/SETUP.md)** — a ~45-minute step-by-step that
+takes you from an empty Supabase + Vercel account to a live URL signed in
+as Jennifer. Security guarantees for this release are documented in
+**[docs/SECURITY-PHASE-3.md](docs/SECURITY-PHASE-3.md)**.
 
 ## Working in this repo with Claude Code
 

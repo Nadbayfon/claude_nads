@@ -60,13 +60,13 @@ as $$
      and deleted_at is null
 $$;
 
--- Seed the four planners. Auth users link via the trigger below at first sign-in.
+-- Seed Jennifer only. Other planners are added later via Jennifer's admin
+-- account (team-member management lands in a future phase). on conflict
+-- makes this migration replayable.
 insert into public.team_member (org_id, display_name, email, role)
 values
-  ((select id from public.org limit 1), 'Jennifer May',  'jennifer@crystalevents.eu', 'owner'),
-  ((select id from public.org limit 1), 'Núria Font',    'nuria@crystalevents.eu',     'planner'),
-  ((select id from public.org limit 1), 'Róisín',         'roisin@crystalevents.eu',    'stylist'),
-  ((select id from public.org limit 1), 'Jackie',         'jackie@crystalevents.eu',    'admin');
+  ((select id from public.org limit 1), 'Jennifer May', 'jennifer@crystalevents.eu', 'owner')
+on conflict (email) do nothing;
 
 -- Allow-list trigger: new auth.users rows must match a team_member.email.
 -- If matched, link auth_user_id; otherwise reject the signup.
