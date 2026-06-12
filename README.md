@@ -52,6 +52,14 @@ takes you from an empty Supabase + Vercel account to a live URL signed in
 as Jennifer. Security guarantees for this release are documented in
 **[docs/SECURITY-PHASE-3.md](docs/SECURITY-PHASE-3.md)**.
 
+### One-click Vercel deploy
+
+After you've created the Supabase project (Step 1 in SETUP.md), use this
+button — Vercel will prompt for the three env vars and set the root
+directory to `apps/web`:
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FNadbayfon%2Fclaude_nads&env=NEXT_PUBLIC_SUPABASE_URL%2CNEXT_PUBLIC_SUPABASE_ANON_KEY%2CSUPABASE_SERVICE_ROLE_KEY&envDescription=Get%20these%20three%20from%20Supabase%20Settings%20%E2%86%92%20Data%20API&envLink=https%3A%2F%2Fsupabase.com%2Fdashboard&project-name=crystal-events&root-directory=apps%2Fweb)
+
 ## Working in this repo with Claude Code
 
 [CLAUDE.md](CLAUDE.md) carries repo-wide guidance. Dedicated skills live in

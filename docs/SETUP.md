@@ -52,15 +52,20 @@ You'll also need:
 
 Two options. Pick A if you want to avoid installing CLI tools.
 
-### Option A — Paste into the Supabase SQL editor (no install)
+### Option A — One-shot paste (easiest, no install)
 
-1. In the Supabase dashboard → **SQL Editor** (left sidebar) → **New query**.
-2. Run these files **in order** (open each file in GitHub, copy contents, paste into SQL Editor, click **Run**):
-   1. `packages/db/migrations/20260504000000_init_extensions.sql`
-   2. `packages/db/migrations/20260504000100_org_team_member.sql`
-   3. `packages/db/migrations/20260504000200_couple_project_event.sql`
-   4. `packages/db/migrations/20260504000300_budget.sql`
-3. Each one should succeed with "Success. No rows returned" (or similar).
+1. Open `packages/db/scripts/all-migrations.sql` in GitHub.
+2. Click the **Copy raw file** button (top-right) → copies the entire file.
+3. In the Supabase dashboard → **SQL Editor** (left sidebar) → **New query**.
+4. Paste → click **Run**.
+5. Should report "Success. No rows returned".
+
+Or, if you prefer per-migration runs (one query per file), open each of
+the four files in `packages/db/migrations/` and paste them in order:
+`20260504000000_init_extensions.sql` →
+`20260504000100_org_team_member.sql` →
+`20260504000200_couple_project_event.sql` →
+`20260504000300_budget.sql`.
 
 ### Option B — Use the Supabase CLI
 
@@ -111,6 +116,17 @@ trying to sign in with an email that isn't in `team_member` gets a clear
 ---
 
 ## Step 4 — Deploy to Vercel (10 min)
+
+**Fastest path — one-click button.** Use the **Deploy with Vercel** button
+in the repo README. It pre-fills:
+
+- Repository: `Nadbayfon/claude_nads`
+- Root directory: `apps/web`
+- Environment-variable prompts for the three values from Step 1
+
+Then skip to "Tell Supabase about the URL" below.
+
+**Manual path** if you prefer to see every dialog:
 
 1. Sign in to <https://vercel.com> → **Add New → Project**.
 2. Choose **Import Git Repository** → select `nadbayfon/claude_nads`.
