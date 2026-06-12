@@ -23,6 +23,7 @@ import {
   deleteLineItem,
   deletePaymentMilestone,
   deleteProviderOption,
+  importBudgetJson,
   setProviderStatus,
 } from "./actions";
 
@@ -91,10 +92,13 @@ const inputCls =
 
 export default async function BudgetPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ coupleId: string }>;
+  searchParams: Promise<{ import?: string; e?: string; s?: string; p?: string; l?: string; m?: string }>;
 }) {
   const { coupleId } = await params;
+  const sp = await searchParams;
   const supabase = await getServerSupabase();
 
   const { data, error } = await supabase
@@ -174,6 +178,10 @@ export default async function BudgetPage({
           </div>
         </div>
       </div>
+
+      <ImportStatus status={sp.import} counts={{ e: sp.e, s: sp.s, p: sp.p, l: sp.l, m: sp.m }} />
+
+      <ImportExportPanel coupleId={coupleId} />
 
       {events.length === 0 ? (
         <EmptyState coupleId={coupleId} />
@@ -641,5 +649,104 @@ function ProviderOptionCard({
         </form>
       </details>
     </div>
+  );
+}
+
+// ---- Import / Export -------------------------------------------------
+
+const IMPORT_MESSAGES: Record<string, { tone: "ok" | "warn" | "error"; text: string }> = {
+  empty: { tone: "warn", text: "Paste JSON first." },
+  "invalid-json": { tone: "error", text: "That's not valid JSON. Check for syntax errors." },
+  "schema-mismatch": {
+    tone: "error",
+    text: "JSON doesn't match the budget-tool.html shape. Expected a top-level { S: { events: [...] } }.",
+  },
+  "couple-not-found": { tone: "error", text: "Could not find this couple." },
+  "no-project": { tone: "error", text: "This couple has no wedding project yet." },
+  ok: { tone: "ok", text: "Imported." },
+};
+
+function ImportStatus({
+  status,
+  counts,
+}: {
+  status: string | undefined;
+  counts: { e?: string; s?: string; p?: string; l?: string; m?: string };
+}) {
+  if (!status) return null;
+  const msg = IMPORT_MESSAGES[status];
+  if (!msg) return null;
+  const styles = {
+    ok: "border-green-200 bg-green-50 text-green-700",
+    warn: "border-amber-200 bg-amber-50 text-amber-700",
+    error: "border-red-200 bg-red-50 text-red-700",
+  }[msg.tone];
+
+  const detail =
+    status === "ok"
+      ? ` ${counts.e ?? "0"} new events · ${counts.s ?? "0"} services · ${counts.p ?? "0"} providers · ${counts.l ?? "0"} line items · ${counts.m ?? "0"} milestones`
+      : "";
+
+  return (
+    <div className={`rounded-lg border px-4 py-2 text-sm ${styles}`}>
+      {msg.text}
+      {detail}
+    </div>
+  );
+}
+
+function ImportExportPanel({ coupleId }: { coupleId: string }) {
+  return (
+    <details className="rounded-lg border border-muted-soft bg-white shadow-sm">
+      <summary className="cursor-pointer px-5 py-3 text-sm font-medium text-charcoal hover:bg-cream/30">
+        Import / Export (round-trip with budget-tool.html)
+      </summary>
+      <div className="grid gap-4 border-t border-muted-soft p-4 lg:grid-cols-2">
+        {/* Export */}
+        <section className="space-y-2">
+          <h3 className="font-display text-base text-charcoal">Export</h3>
+          <p className="text-xs text-muted">
+            Downloads the current budget as JSON in the exact shape used by
+            <code className="mx-1 rounded bg-cream px-1">tools/budget-tool.html</code>.
+            Open it in the HTML tool offline (Import in the tool&apos;s header) and totals
+            will match to the cent.
+          </p>
+          <a
+            href={`/couples/${coupleId}/budget/export.json`}
+            className="inline-block rounded-lg bg-charcoal px-4 py-2 text-sm font-medium text-cream hover:bg-charcoal/90"
+            download
+          >
+            Download JSON
+          </a>
+        </section>
+
+        {/* Import */}
+        <section className="space-y-2">
+          <h3 className="font-display text-base text-charcoal">Import</h3>
+          <p className="text-xs text-muted">
+            Paste JSON exported from <code className="rounded bg-cream px-1">budget-tool.html</code>
+            {" "}(or hand-rolled). Appends services, providers, lines, and milestones
+            under matching events; events that don&apos;t exist will be created
+            (kind = other, phase = wedding day).
+          </p>
+          <form action={importBudgetJson} className="space-y-2">
+            <input type="hidden" name="couple_public_id" value={coupleId} />
+            <textarea
+              name="json"
+              rows={6}
+              placeholder='{ "S": { "events": [ ... ] } }'
+              className="w-full rounded-lg border border-muted-soft px-3 py-2 font-mono text-xs text-charcoal focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
+              required
+            />
+            <button
+              type="submit"
+              className="rounded-lg border border-charcoal px-4 py-2 text-sm font-medium text-charcoal hover:bg-charcoal hover:text-cream"
+            >
+              Import (append)
+            </button>
+          </form>
+        </section>
+      </div>
+    </details>
   );
 }
