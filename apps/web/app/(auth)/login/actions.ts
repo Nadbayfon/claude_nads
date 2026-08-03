@@ -1,6 +1,7 @@
 "use server";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
+import type { Route } from "next";
 import { z } from "zod";
 import { getServerSupabase } from "@/lib/supabase/server";
 
@@ -24,7 +25,8 @@ export async function signInWithGoogle() {
   if (error || !data.url) {
     redirect(`/login?error=${encodeURIComponent(error?.message ?? "Could not start Google sign-in")}`);
   }
-  redirect(data.url);
+  // External Supabase OAuth URL — typedRoutes only knows internal routes.
+  redirect(data.url as Route);
 }
 
 export async function sendMagicLink(formData: FormData) {
