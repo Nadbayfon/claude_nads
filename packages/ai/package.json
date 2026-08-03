@@ -1,0 +1,30 @@
+{
+  "name": "@crystal/ai",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./system-prompt": "./src/system-prompt.ts",
+    "./model": "./src/model.ts",
+    "./glossary": "./src/glossary.ts",
+    "./tools": "./tools/index.ts",
+    "./tools/types": "./tools/types.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "echo 'no tests yet'",
+    "eval": "echo 'evals scaffolded but not yet runnable'"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.30.0",
+    "@crystal/db": "workspace:*",
+    "@supabase/supabase-js": "^2.45.0",
+    "zod": "^3.23.8"
+  }
+}
