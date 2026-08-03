@@ -14,6 +14,15 @@ setup sections.
 
 ## Prerequisites (5 min)
 
+> **Fully automated alternative:** if you're comfortable creating two API
+> tokens, you can skip Steps 1–5 entirely and run
+> `SUPABASE_TOKEN=sbp_… VERCEL_TOKEN=… ./scripts/deploy.sh`
+> (or hand the tokens to Claude Code and ask it to run the script).
+> It creates the Supabase project, applies migrations, verifies RLS,
+> deploys to Vercel, wires auth, and smoke-tests the live URL.
+> Google sign-in is skipped — Jennifer signs in with a magic link.
+> Revoke both tokens when done.
+
 You'll need accounts at:
 
 1. **Supabase** — <https://supabase.com> (free tier is fine; pick **EU region**).
